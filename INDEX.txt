@@ -1,0 +1,1484 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal Sistem Terpadu Inspeksi & Rekap SCM</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        @media print {
+            body { background: white !important; color: black !important; }
+            .print-hidden { display: none !important; }
+            .print-area { width: 100% !important; max-width: 100% !important; padding: 0 !important; box-shadow: none !important; background: white !important; border: none !important; }
+            input, textarea, select { background: transparent !important; border-bottom: 1px solid #94a3b8 !important; border-top: none !important; border-left: none !important; border-right: none !important; color: black !important; box-shadow: none !important; }
+            .no-black-pdf { background-color: white !important; background: white !important; color: black !important; box-shadow: none !important; }
+            canvas { border: 1px solid #000 !important; }
+            table { page-break-inside: auto; }
+            tr { page-break-inside: avoid; page-break-after: auto; }
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar { height: 6px; width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-900 min-h-screen antialiased selection:bg-red-600 selection:text-white">
+
+    <div id="root"></div>
+
+    <script type="text/babel" data-presets="react,env">
+
+        // --- URL DATABASE ONLINE FIREBASE ---
+        const FIREBASE_URL = "https://scm-portal-f11c6-default-rtdb.asia-southeast1.firebasedatabase.app";
+        // --- URL UNTUK REKAP HM GOOGLE SHEET ---
+        const GOOGLE_SHEET_URL = "https://script.google.com/macros/s/AKfycbzLTkRDy3yAjS_Oc9FhUADkUv59VOrbd-27rz3tdaTCbSgwcmq3Ic_IHgzJVBv5qOis7Q/exec";
+
+        // --- DATA LOGO PT BATUTUA TEMBAGA RAYA ---
+        const btrLogoBase64 = "data:image/gif;base64,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";
+        
+        // --- DATA SCRIPT 1 (DAILY INSPECTION & HM) ---
+        const unitDataScript1 = {
+            crane: {
+                name: "CRANE TRUCK",
+                items: [
+                    { section: "I. PEMERIKSAAN UMUM", tasks: ["Roda dan baut roda kencang", "Sistem Kemudi dalam keadaan baik", "Sabuk Pengaman dalam keadaan baik", "Bendera lambang ketinggian terlihat", "Pemadam api dalam keadaan baik", "Kotak P3k tersedia", "Tidak ada kerusakan panel body", "Kebersihan dalam kabin baik", "Ban serep dan kunci roda tersedia", "Segitiga reflektif tersedia"] },
+                    { section: "II. PEMERIKSAAN SEBELUM ENGINE HIDUP", tasks: ["Level air pendingin radiator cukup", "Level oli mesin cukup", "Level oli power steering cukup", "Level oli rem cukup", "Level oli hydraulic cukup", "Level bahan bakar cukup", "Visual cek kondisi V-Belt baik", "Level air pembersih kaca cukup", "Battery bersih dan dalam kondisi baik"] },
+                    { section: "III. PEMERIKSAAN SETELAH MESIN HIDUP", tasks: ["Rem service dan parkir berfungsi baik", "Panel instrument kondisi baik", "Tanda belok berfungsi baik", "Lampu tinggi rendah berfungsi baik", "Lampu stop berfungsi baik", "Lampu belakang berfungsi baik", "Lampu rotary berfungsi baik", "Lampu hazard berfungsi baik", "Alarm mundur berfungsi baik", "Klakson berfungsi baik", "Pembersih kaca depan berfungsi baik", "Radio komunikasi berfungsi baik"] },
+                    { section: "IV. PEMERIKSAAN HYDRAULIC DAN PERANGKAT CRANE", tasks: ["Periksa kebocoran hydraulic system dan pump control valve", "Periksa hydraulic cylinder dan hose line bila ada yang bergesekan", "Periksa stabilitas rod balancing sampai terbuka penuh", "Periksa fungsi machine brake", "Periksa keretakan frame rod balancing, boom dan arm crane", "Periksa semua pin dan point grease terlumasi"] }
+                ]
+            },
+            "REACH STACKER": {
+                name: "REACH STACKER",
+                items: [
+                    { section: "I. PEMERIKSAAN ENGINE, HYDRAULIC, TRANSMISI", tasks: ["Level Oli Engine", "Level Air Pendingin", "Level Bahan Bakar", "Kebocoran ( Oli, Solar, Air )", "Level Oli Hidrolik", "Kebocoran Hidrolik", "Level Oli Transmisi", "Kebocoran Transmisi", "Level Oli Mesin", "Kebocoran Mesin"] },
+                    { section: "II. PEMERIKSAAN BAN DAN KELISTRIKAN", tasks: ["Tekanan Angin Ban", "Kekencangan Mur Roda", "Level Oil Brake", "Level Oil Steering", "Kebocoran Sistem Rem", "Tegangan Accu / Battery", "Air Accu & Katupnya", "Pengisian Alternator", "Lampu Indikator & Error Code", "Klakson & Back up Alarm", "Semua Lampu & Lampu Kerja", "Air Conditioner / AC", "Steering", "Brake / Rem"] },
+                    { section: "III. PEMERIKSAAN FUNGSI RS", tasks: ["Lifting & Lowering", "Boom Out & In", "Rotation CW & CCW", "Side shift Right & Left", "Spreading 20 / 40", "Twist Lock & Unlock", "Forward, Reverse & Gear Shifting", "Kebocoran suara tidak Normal", "Kebersihan Unit / Alat", "Kebersihan Cabin", "Pengecekan Visual Keretakan / Lecet"] }
+                ]
+            },
+            forklift: {
+                name: "FORKLIFT",
+                items: [
+                    { section: "I. PEMERIKSAAN UMUM", tasks: ["Roda dan baut roda kencang", "Sistem kemudi dalam keadaan baik", "Sabuk pengaman dalam keadaan baik", "Tidak terdapat kebocoran Oli", "Kaca Spion dalam keadaan baik", "Suspensi dalam keadaan baik", "Bendera tambang ketinggian cukup dan dapat terlihat", "Pemadam api dalam keadaan baik", "Kotak P3K tersedia", "Tidak ada kerusakan panel body", "Kebersihan dalam kabin baik", "Ban serep dan Kunci roda tersedia", "Segitiga reflektif tersedia"] },
+                    { section: "II. PEMERIKSAAN SEBELUM MESIN HIDUP", tasks: ["Level pendingin radiator cukup", "Level oli mesin cukup", "Level oli power steering cukup", "Level oli rem cukup", "Level oli hydraulic cukup", "Level bahan bakar cukup", "Visual cek kondisi V-Belt baik", "Battery terminal bersih dan dalam kondisi baik"] },
+                    { section: "III. PEMERIKSAAN SETELAH MESIN HIDUP", tasks: ["Rem service dan parkir berfungsi baik", "Panel instrument kondisi baik", "Tanda belok berfungsi", "Lampu tinggi/rendah berfungsi baik", "Lampu stop berfungsi baik", "Lampu belakang berfungsi baik", "Lampu rotary berfungsi baik", "Lampu hazard berfungsi baik", "Alarm mundur berfungsi baik", "Klakson berfungsi baik", "Radio komunikasi berfungsi baik"] },
+                    { section: "IV. HYDRAULIC DAN PERANGKAT KOMPONEN", tasks: ["Periksa kebocoran hydraulic pump and control valve", "Periksa hydraulic cylinder dan hose line bila ada yang bergesekan", "Periksa keretakan frame dan perangkat attachment"] }
+               ]
+            },
+            "PRIME MOVER": {
+                name: "PRIME MOVER",
+                items: [
+                    { section: "I. PEMERIKSAAN UMUM", tasks: ["Roda dan baut roda kencang", "Sistem Kemudi dalam keadaan baik", "Sabuk Pengaman dalam keadaan baik", "Bendera lambang ketinggian terlihat", "Pemadam api dalam keadaan baik", "Kotak P3k tersedia", "Tidak ada kerusakan panel body", "Kebersihan dalam kabin baik", "Ban serep dan kunci roda tersedia", "Segitiga reflektif tersedia"] },
+                    { section: "II. PEMERIKSAAN SEBELUM ENGINE HIDUP", tasks: ["Level air pendingin radiator cukup", "Level oli mesin cukup", "Level oli power steering cukup", "Level oli rem cukup", "Level oli hydraulic cukup", "Level bahan bakar cukup", "Visual cek kondisi V-Belt baik", "Level air pembersih kaca cukup", "Battery bersih dan dalam kondisi baik"] },
+                    { section: "III. PEMERIKSAAN SETELAH MESIN HIDUP", tasks: ["Rem service dan parkir berfungsi baik", "Panel instrument kondisi baik", "Tanda belok berfungsi baik", "Lampu tinggi rendah berfungsi baik", "Lampu stop berfungsi baik", "Lampu belakang berfungsi baik", "Lampu rotary berfungsi baik", "Lampu hazard berfungsi baik", "Alarm mundur berfungsi baik", "Klakson berfungsi baik", "Pembersih kaca depan berfungsi baik", "Radio komunikasi berfungsi baik"] },
+                    { section: "IV. PEMERIKSAAN HYDRAULIC DAN KOMPONEN TRAILER", tasks: ["Periksa kebocoran hydraulic system dan pump control valve", "Periksa hydraulic cylinder dan hose line bila ada yang bergesekan", "Periksa stabilitas rod balancing sampai terbuka penuh", "Periksa fungsi machine brake", "Periksa keretakan frame rod balancing, boom dan arm", "Periksa semua pin dan point grease terlumasi"] }
+                ]
+            },
+            "Merlo": { 
+                name: "MERLO TELEHANDLER",
+                items: [
+                    { section: "I. PEMERIKSAAN UMUM", tasks: ["Kekencangan roda dan nutnya", "Sistem kemudi dalam keadaan baik", "Sabuk pengaman dalam keadaan baik", "Tidak terdapat kebocoran oli", "Kaca spion dalam keadaan baik", "Suspensi dalam keadaan baik", "Pemadam api dalam keadaan baik", "Tidak ada kerusakan pada panel", "Kebersihan dalam kabin baik"] },
+                    { section: "II. PEMERIKSAAN SEBELUM ENGINE HIDUP", tasks: ["Level air radiator cukup", "Level oli mesin cukup", "Level oli steering cukup", "Level oli rem cukup", "Level oli hydraulic cukup", "Level bahan bakar cukup", "Visual cek kondisi V-Belt baik", "Level air pembersih kaca cukup", "Terminal battery bersih dan kondisi baik"] },
+                    { section: "III. PEMERIKSAAN SETELAH ENGINE HIDUP", tasks: ["Rem dan parking rem bekerja dengan baik", "Panel instrument kondisi baik", "Tanda belok berfungsi dengan baik", "Lampu jauh dekat berfungsi dengan baik", "Lampu stop berfungsi dengan baik", "Lampu belakang berfungsi dengan baik", "Lampu rotary berfungsi dengan baik", "Lampu hazard berfungsi dengan baik", "Alarm mundur bekerja dengan baik", "Klakson berfungsi dengan baik", "Pembersih kaca depan berfungsi dengan baik", "Radio Komunikasi berfungsi dengan baik"] },
+                    { section: "IV. PEMERIKSAAN HYDRAULIC AND ATTACHMENT", tasks: ["Periksa kebocoran hydraulic system, pump dan valve", "Periksa hose jika ada yang bergesekan", "Periksa hydraulic cylinder", "Periksa frame dari keretakan", "Periksa semua pin dan point grease terlumasi"] },
+                ] 
+            },
+            "Elec": { 
+               name: "FORKLIFT ELECTRIC", 
+               items: [
+                    { section: "I. PEMERIKSAAN UMUM", tasks: ["Roda dan baut roda kencang", "Sistem kemudi dalam keadaan baik", "Sabuk pengaman dalam keadaan baik", "Tidak terdapat kebocoran Oli", "Kaca Spion dalam keadaan baik", "Suspensi dalam keadaan baik", "Bendera tambang ketinggian cukup dan dapat terlihat", "Pemadam api dalam keadaan baik", "Kotak P3K tersedia", "Tidak ada kerusakan panel body", "Kebersihan dalam kabin baik", "Ban serep dan Kunci roda tersedia", "Segitiga reflektif tersedia"] },
+                    { section: "II. PEMERIKSAAN SEBELUM ENGINE HIDUP", tasks: ["Level pendingin radiator cukup", "Level oli mesin cukup", "Level oli power steering cukup", "Level oli rem cukup", "Level oli hydraulic cukup", "Level bahan bakar cukup", "Visual cek kondisi V-Belt baik", "Battery terminal bersih dan dalam kondisi baik"] },
+                    { section: "III. PEMERIKSAAN SETELAH MESIN HIDUP", tasks: ["Rem service dan parkir berfungsi baik", "Panel instrument kondisi baik", "Tanda belok berfungsi", "Lampu tinggi/rendah berfungsi baik", "Lampu stop berfungsi baik", "Lampu belakang berfungsi baik", "Lampu rotary berfungsi baik", "Lampu hazard berfungsi baik", "Alarm mundur berfungsi baik", "Klakson berfungsi baik", "Radio komunikasi berfungsi baik"] },
+                    { section: "IV. HYDRAULIC DAN PERANGKAT KOMPONEN", tasks: ["Periksa kebocoran hydraulic pump and control valve", "Periksa hydraulic cylinder dan hose line bila ada yang bergesekan", "Periksa keretakan frame dan perangkat attachment"] }
+               ]
+             },
+            "lv": { 
+	     name: "LIGHT VEHICLE (LV)",
+	     items: [
+		   { section: "I. PEMERIKSAAN UMUM", tasks: ["Roda dan baut roda kencang", "Sistem kemudi dalam keadaan baik", "Sabuk pengaman dalam keadaan baik", "Kaca spion dalam keadaan baik", "Suspensi dalam keadaan baik", "Bendera tambang ketinggian cukup dan dapat terlihat", "Pemadam api dalam keadaan baik", "Kotak P3K tersedia", "Tidak ada kerusakan panel body", "Kebersihan dalam kabin baik", "Ban serep dan kunci roda tersedia", "Segitiga reflektif tersedia"] }, { section: "II. EMERGENCY", tasks: ["APAR", "Kotak P3K", "Tool Kit & Jack"] },
+    		   { section: "II. PEMERIKASAAN SEBELUM MESIN HIDUP", tasks: ["Level air pendingin radiator cukup", "Level oli mesin cukup", "Level oli power steering cukup", "Level oli rem cukup", "Level bahan bakar cukup", "Visual cek kondisi belt kipas baik", "Level air pembersih kaca cukup", "Terminal battery bersih dan kondisi baik"] },
+		   { section: "III. PEMERIKASAAN SETELAH MESIN HIDUP", tasks: ["Rem service dan parkir baik", "Panel instrument kondisi baik", "Tanda belok berfungsi baik", "Lampu jauh/dekat berfungsi baik", "Lampu stop berfungsi baik", "Lampu belakang berfungsi baik", "Lampu Hazard berfungsi baik", "Alarm mundur berfungsi baik", "Klackson berfungsi baik", "Pembersih kaca depan berfungsi baik", "Radio komunikasi berfungsi baik"] },
+		]
+		},  
+
+  };
+
+        const btrUnits = [
+            {id:"fl04", n:"FL-04"}, {id:"fl05", n:"FL-05"}, {id:"fe", n:"Forklift Elec"}, 
+            {id:"lv149", n:"LV-158"}, {id:"lt08", n:"LT-08"}, {id:"lt09", n:"LT-09"}, 
+            {id:"ct01", n:"CT-01"}, {id:"pm001", n:"PM-001"}, {id:"rs001", n:"RS-001"}
+        ];
+        const pliUnits = [
+            {id:"m06", n:"Manitou-06"}, {id:"mr04", n:"Merlo-04"}, {id:"mr09", n:"Merlo-09"}, 
+            {id:"rs08", n:"RS 08"}, {id:"rs05", n:"RS 05"}
+        ];
+
+        // --- DATA SCRIPT 2 (WEEKLY INSPECTION LIBRARIES) ---
+        const weeklyLibrary = {
+            'Container T': ["Container bersih & rapi, tidak ada tumpahan/sampah", "Struktur Container (tidak penyok/bocor)", "Pintu container bisa di buka/tutup dengan baik", "Lantai container kering, tidak licin dan kotor", "Blower berfungsi baik", "Penataan B3 rapi & sesuai jenis", "Kemasan tidak bocor/penyok", "Spill kit tersedia & lengkap", "Container dikunci ", "Safety Shower/Eyewash normal", "APAR pressure normal & inspeksi valid", "Label B3 sesuai", "MSDS tersedia dan masih berlaku", "Penerangan cukup"],
+            'Container S': ["Container bersih & rapi, tidak ada tumpahan/sampah", "Struktur container (tidak penyok/bocor)", "Pintu container bisa di buka/tutup dengan baik", "Lantai container kering, tidak licin dan kotor", "AC Berfungsi baik", "Penataan B3 rapi & sesuai jenis", "Kemasan tidak bocor/penyok", "Spill kit tersedia & lengkap", "Container dikunci", "Safety shower/Eyewash normal", "APAR pressure normal & inspeksi valid", "Label B3 sesuai", "MSDS tersedia dan masih berlaku", "Penerangan cukup"],
+            'Reagent Storage Yard': ["Area bersih & bebas tumpahan", "Drum,IBC,Isotank dalam kondisi baik(tidak bocor/korosi)", "Barang dengan kemasan karung tidak bocor/rusak", "Barang di simpan sesuai jenis", "APAR pressure normal & inspeksi valid", "Tidak ada barang di Yard tanpa cover", "Spill kit lengkap dan siap pakai", "MSDS tersedia dan Valid", "Eyewash & safety shower berfungsi", "Akses terbatas & terkunci", "Tidak ada aktivitas tidak aman"],
+            'Fuel Station': ["Lantai bersih, tidak licin, bebas tumpahan", "Pompa Fuel Layak di operasikan", "Hose & Nozzle tidak bocor/retak", "Auto cut-off nozzle berfungsi dengan baik", "Grounding atau earthing terpasang dan di uji", "APAR pressure normal & inspeksi valid", "Wheel Chock tersedia dan dalam kondisi baik", "Spill kit tersedia dan lengkap", "Limbah B3 di simpan sesuai regulasi", "Tumpahan fuel di tangani dengan baik", "Safety shower/Eyewash normal", "Kotak sampah kontaminasi dan general tersedia", "Area fuel station bersih dari sampah", "Pump dan fuel gun berfungsi dengan baik"],
+            'Oil Boom': ["Dinding/dasar tidak bocor", "Tidak overflow/meluap,level cairan masih dalam batas aman (>20cm under cover)", "Tidak ada sampah asing di dalam fuel trap(plastik,daun,kertas)", "Outlet dan pipa drain tidak tersumbat, aliran lancar", "Endapan sludge/lumpur tidak berlebihan dan belum melewati batas cleaning (ketebalan lumpur < 20cm)", "Cover/grating terpasang aman dan tidak rusak", "Area sekitar bersih dari tumpahan fuel/oli dan tidak licin", "Tidak ada bau menyengat berlebihan", "Spill kit tersedia dan siap di gunakan di area fuel trap"],
+            'Oil Storage': ["Area bersih dan rapi", "Tidak ada tumpahan oli/minyak", "Tidak ada genangan air", "Akses jalan aman & tidak licin", "Penerangan memadai", "Drum/kemasan tidak bocor", "Tidak ada karat/korosi berat", "Drum dalam keadaan tertutup rapat", "Label jenis oli jelas dan terbaca", "APAR pressure normal & inspeksi valid", "Spill kit tersedia dan lengkap", "Sign B3 tersedia dan sesuai", "MSDS tersedia dan valid","Drum / IBC di susun rapi dan sesuai jenis "],
+            'Main Tank Fuel': ["Area bersih dan bebas tumpahan", "Tidak ada genangan air di sekitar tangki", "Akses jalan aman dan tidak licin", "Pagar dan pembatas area baik", "Rambu K3 terpasang", "Badan Tangki tidak bocor/retak", "Tidak ada korosi berlebihan", "Cat pelindung masih baik", "Name plate dan kapasitas terbaca", "Fondasi tangki stabil", "Pipa inlet/outlet tidak bocor", "Valve berfungsi normal", "Penyangga pipa kokoh", "Bundwall utuh", "Drain bundwall tertutup & terkunci"],
+            'Gas Storage': ["Area bersih dan rapi", "MSDS tersedia dan mudah di akses", "Penerangan cukup dan aman", "Posisi Tabung tersusun dengan rapi ,tegak & dirantai", "Valve cap terpasang saat di gunakan", "Konsidi Fisik tabung relative tabung tidak penyok/korosi", "Pemisahan tabung Full/Empty terpisah", "Kebocoran gas tidak terdeteksi bau/bocor ", "APAR pressure normal & inspeksi valid", "Rambu Larangan tersedia", "Tidak ada sumber api di area", "Tabung gas di simpan sesuai jenis", "Keranjang certified dan valid"],
+            'Jetty Area': ["Area bersih dan tertata rapi", "Bollard/ Mooring poin terpasang kuat", "Fender Jetty dalam kondisi baik", "Handrail & guardrail lengkap dan kokoh", "Tangga jetty & akses naik turun aman", "Spill kit lengkap & siap pakai", "Eye wash & safety shower berfungsi", "Penerangan area jetty berfungsi", "Tidak ada potensi pencemaran laut", "Tidak ada tumpahan BBM/oli di area Jetty", "APAR pressure normal & inspeksi valid"],
+            'Laydown Yard': ["Area yard bersih, bebas sampah & material tidak terpakai", "Permukaan jalan/yard rata, tidak berlubang & tidak licin", "Drainase berfungsi baik, tidak tersumbat", "Penerangan area cukup (siang & malam)", "Material ditata rapi dan stabil", "Tidak ada Container overstack / melebihi batas aman", "Pallet/kayu dalam kondisi baik", "APAR pressure normal & inspeksi valid", "Area aman dari potensi kebakaran"],
+            'Warehouse Area': ["Lantai bersih, tidak licin, bebas tumpahan", "Barang tersusun rapi sesuai area", "Jalur forklift & pejalan kaki jelas", "Tempat sampah tersedia & tidak penuh", "Kondisi rak tidak rusak / bengkok", "Beban rak sesuai kapasitas", "Label kapasitas rak terpasang", "Semua barang disimpan dalam keadaan aman", "Barang diberi label & identitas jelas", "Pallet dalam kondisi baik", "APAR pressure normal & inspeksi valid", "Rambu K3 & jalur evakuasi jelas", "Kabel tidak terkelupas / semrawut", "Penerangan memandai", "CCTV / sistem keamanan berfungsi", "Tagging electrical, lifting & tangga Valid"]
+        };
+        const weeklyDocNumbers = {
+            'Container T': "BTR-SCM-017", 'Container S': "BTR-SCM-018", 'Reagent Storage Yard': "BTR-SCM-009",
+            'Fuel Station': "BTR-SCM-010", 'Oil Boom': "BTR-SCM-010", 'Oil Storage': "BTR-SCM-019",
+            'Main Tank Fuel': "BTR-SCM-010", 'Gas Storage': "BTR-SCM-019", 'Jetty Area': "BTR-SCM-006",
+            'Laydown Yard': "BTR-SCM-019", 'Warehouse Area': "BTR-SCM-020"
+        };
+
+        // --- COMPONENT INPUT TANDA TANGAN (CANVAS DRAWING PAD) ---
+        function SignaturePad({ onSave, savedImage, readOnly, placeholder }) {
+            const canvasRef = React.useRef(null);
+            const isDrawing = React.useRef(false);
+
+            React.useEffect(() => {
+                if (canvasRef.current) {
+                    const canvas = canvasRef.current;
+                    const ctx = canvas.getContext('2d');
+                    ctx.strokeStyle = '#020617'; 
+                    ctx.lineWidth = 2.5;
+                    ctx.lineCap = 'round';
+                }
+            }, [readOnly, savedImage]);
+
+            const startDrawing = (e) => {
+                if (readOnly) return;
+                isDrawing.current = true;
+                draw(e);
+            };
+
+            const stopDrawing = () => {
+                if (readOnly) return;
+                isDrawing.current = false;
+                if (canvasRef.current) {
+                    onSave(canvasRef.current.toDataURL());
+                }
+            };
+
+            const draw = (e) => {
+                if (!isDrawing.current || readOnly) return;
+                const canvas = canvasRef.current;
+                const ctx = canvas.getContext('2d');
+                const rect = canvas.getBoundingClientRect();
+                
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                
+                ctx.lineTo(clientX - rect.left, clientY - rect.top);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(clientX - rect.left, clientY - rect.top);
+            };
+
+            const clearCanvas = () => {
+                if (canvasRef.current) {
+                    const canvas = canvasRef.current;
+                    const ctx = canvas.getContext('2d');
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    ctx.beginPath();
+                    onSave('');
+                }
+            };
+
+            if (savedImage) {
+                return (
+                    <div className="flex flex-col items-center justify-center p-1 bg-slate-50 rounded-lg border border-slate-200">
+                        <img src={savedImage} className="w-40 h-20 object-contain mix-blend-multiply" alt="Tanda tangan" />
+                        {!readOnly && (
+                            <button onClick={() => onSave('')} className="text-[10px] text-red-600 font-medium mt-1 print-hidden hover:underline focus:outline-none">Hapus TTD ✕</button>
+                        )}
+                    </div>
+                );
+            }
+
+            return (
+                <div className="flex flex-col items-center w-full max-w-[200px]">
+                    <canvas 
+                        ref={canvasRef}
+                        width="200" 
+                        height="90"
+                        onMouseDown={startDrawing}
+                        onMouseUp={stopDrawing}
+                        onMouseMove={draw}
+                        onMouseOut={stopDrawing}
+                        onTouchStart={startDrawing}
+                        onTouchEnd={stopDrawing}
+                        onTouchMove={draw}
+                        className="bg-slate-50 border-2 border-dashed border-slate-300 rounded-lg cursor-crosshair touch-none max-w-full hover:border-slate-400 transition-colors"
+                    />
+                    <div className="flex gap-3 mt-1.5 print-hidden justify-between w-full px-1">
+                        <span className="text-[10px] text-slate-400 italic font-medium">{placeholder || 'Goreskan TTD'}</span>
+                        {!readOnly && <button type="button" onClick={clearCanvas} className="text-[10px] text-red-500 font-semibold hover:text-red-700 transition-colors">Clear</button>}
+                    </div>
+                </div>
+            );
+        }
+
+        // ==========================================
+        // COMPONENT UTAMA: PORTAL INTEGRASI
+        // ==========================================
+        function App() {
+            const [systemMode, setSystemMode] = React.useState('core-dashboard'); 
+            const [activeTab, setActiveTab] = React.useState('dashboard'); 
+            
+            const [isSaving, setIsSaving] = React.useState(false);
+
+            // --- STATE UTAMA SCRIPT 1 ---
+            const [sys1Unit, setSys1Unit] = React.useState('crane');
+            const [sys1Meta, setSys1Meta] = React.useState({ model: '', unitNum: '', operator: '', tanggal: '', jam: '' });
+            const [sys1Checklist, setSys1Checklist] = React.useState({});
+            const [sys1Logs, setSys1Logs] = React.useState([]);
+            const [sys1ActiveRecordId, setSys1ActiveRecordId] = React.useState(null);
+            const [sys1TtdOp, setSys1TtdOp] = React.useState('');
+            const [sys1TtdSpv, setSys1TtdSpv] = React.useState('');
+
+            // HM States SCRIPT 1
+            const [hmData, setHmData] = React.useState({});
+
+            // --- STATE UTAMA SCRIPT 2 ---
+            const [sys2Area, setSys2Area] = React.useState('Container T');
+            const [sys2Meta, setSys2Meta] = React.useState({ tanggal: '', jam: '', inspectedBy: '' });
+            const [sys2Checks, setSys2Checks] = React.useState([]);
+            const [sys2FindingsList, setSys2FindingsList] = React.useState([{ id: Date.now(), temuan: '', perbaikan: '', pic: '', target: '' }]);
+            
+            // DITAMBAHKAN: sigHead ke dalam struktur state sys2Sigs
+            const [sys2Sigs, setSys2Sigs] = React.useState({ sigInspector:'', nameInspector:'', nameSpv:'', nameHead:'', sigSpv:'', sigHead:'' });
+            const [sys2Records, setSys2Records] = React.useState([]);
+            const [sys2ActiveId, setSys2ActiveId] = React.useState(null);
+            const [sys2ReadOnly, setSys2ReadOnly] = React.useState(false);
+
+            // --- TAMBAHKAN FUNGSI INI ---
+            const handleVerifikasiClick = (targetTab) => {
+                const passwordInput = prompt("🔒 Masukkan Password Otoritas (Supervisor/HOD) untuk mengakses halaman ini:");
+                // Ganti "admin123" dengan password yang Anda inginkan
+                if (passwordInput === "admin123") {
+                    setActiveTab(targetTab);
+                } else if (passwordInput !== null) {
+                    alert("❌ AKSES DITOLAK: Password Salah!");
+                }
+            };
+            // -----------------------------
+
+            // --- AMBIL DATA DARI CLOUD DATABASE ONLINE ---
+            const fetchCloudData = () => {
+                const tujuhHariLalu = Date.now() - (7 * 24 * 60 * 60 * 1000);
+
+                fetch(`${FIREBASE_URL}/sys1_logs.json`).then(res => res.json()).then(data => {
+                        if (data) {
+                            const parsed = Object.keys(data).map(key => data[key]).filter(item => item.id > tujuhHariLalu);
+                            setSys1Logs(parsed);
+                        }
+                    }).catch(err => console.log("Gagal konek cloud:", err));
+
+                fetch(`${FIREBASE_URL}/sys2_logs.json`).then(res => res.json()).then(data => {
+                        if (data) {
+                            const parsed = Object.keys(data).map(key => data[key]).filter(item => {
+                                    const numericId = typeof item.id === 'string' ? parseInt(item.id.replace('REC_','')) : item.id;
+                                    return numericId > tujuhHariLalu;
+                                });
+                            setSys2Records(parsed);
+                        } else {
+                            setSys2Records([]);
+                        }
+                    }).catch(err => console.log("Gagal konek cloud:", err));
+            };
+
+            React.useEffect(() => {
+                const now = new Date();
+                const d = now.toISOString().split('T')[0];
+                const t = String(now.getHours()).padStart(2, '0') + ":" + String(now.getMinutes()).padStart(2, '0');
+                
+                setSys1Meta(prev => ({ ...prev, tanggal: d, jam: t }));
+                setSys2Meta(prev => ({ ...prev, tanggal: d, jam: t }));
+
+                fetchCloudData();
+            }, [systemMode, activeTab]);
+
+            React.useEffect(() => {
+                if (!sys2ActiveId) {
+                    const libraryItems = weeklyLibrary[sys2Area] || [];
+                    setSys2Checks(libraryItems.map(() => ({ val: '', img: '' })));
+                }
+            }, [sys2Area, sys2ActiveId]);
+
+            const handleSys1Check = (index, status) => {
+                setSys1Checklist(prev => ({
+                    ...prev,
+                    [index]: prev[index] === status ? '' : status
+                }));
+            };
+
+            const submitSys1ToLog = () => {
+                if (!sys1Meta.tanggal || !sys1Meta.operator || !sys1Meta.unitNum) {
+                    alert("⚠️ Kolom No. Unit dan Nama Operator wajib diisi sebelum dikirim!");
+                    return;
+                }
+                if (!sys1TtdOp) {
+                    alert("⚠️ Operator wajib menandatangani form terlebih dahulu!");
+                    return;
+                }
+                
+                setIsSaving(true); 
+                const recordId = Date.now();
+                const newRecord = {
+                    id: recordId,
+                    timestamp: new Date().toLocaleString('id-ID'),
+                    unit: unitDataScript1[sys1Unit].name,
+                    unitKey: sys1Unit, 
+                    unitNum: sys1Meta.unitNum,
+                    operator: sys1Meta.operator,
+                    tanggal: sys1Meta.tanggal,
+                    model: sys1Meta.model,
+                    jam: sys1Meta.jam,
+                    status: "pending",
+                    checklist: sys1Checklist,
+                    ttdOperator: sys1TtdOp,
+                    ttdSupervisor: null
+                };
+
+                fetch(`${FIREBASE_URL}/sys1_logs/${recordId}.json`, {
+                    method: 'PUT',
+                    body: JSON.stringify(newRecord)
+                })
+                .then(() => {
+                    setIsSaving(false); 
+                    alert("✅ Form Terkirim ke Cloud Server Antrean SPV!");
+                    setActiveTab('dashboard');
+                    resetSys1Form();
+                    fetchCloudData();
+                }).catch(()=> { setIsSaving(false); alert("❌ Gagal Terkoneksi!"); });
+            };
+
+            const deleteSys1Log = (id, e) => {
+                e.stopPropagation();
+                if(confirm("Apakah Anda yakin ingin menghapus data log pemeriksaan harian ini?")) {
+                    fetch(`${FIREBASE_URL}/sys1_logs/${id}.json`, { method: 'DELETE' })
+                    .then(() => fetchCloudData());
+                }
+            };
+
+            const openSys1ForSPV = (id) => {
+                const record = sys1Logs.find(f => f.id == id);
+                if (!record) return;
+                setSys1ActiveRecordId(id);
+                if (record.unitKey) setSys1Unit(record.unitKey);
+                setSys1Meta({ model: record.model, unitNum: record.unitNum, operator: record.operator, tanggal: record.tanggal, jam: record.jam });
+                setSys1Checklist(record.checklist || {});
+                setSys1TtdOp(record.ttdOperator);
+                setSys1TtdSpv(record.ttdSupervisor || '');
+                setActiveTab('form');
+            };
+
+            const saveSys1SpvApproval = () => {
+                if (!sys1TtdSpv) {
+                    alert("⚠️ Supervisor wajib menandatangani berkas sebelum persetujuan!");
+                    return;
+                }
+                
+                const targetRecord = sys1Logs.find(f => f.id == sys1ActiveRecordId);
+                const updatedRecord = { ...targetRecord, status: 'approved', ttdSupervisor: sys1TtdSpv };
+
+                fetch(`${FIREBASE_URL}/sys1_logs/${sys1ActiveRecordId}.json`, {
+                    method: 'PUT',
+                    body: JSON.stringify(updatedRecord)
+                })
+                .then(() => {
+                    alert("✅ Validasi Supervisor Berhasil Disimpan ke Database!");
+                    setActiveTab('antrean');
+                    setSys1ActiveRecordId(null);
+                    resetSys1Form();
+                    fetchCloudData();
+                });
+            };
+
+            const resetSys1Form = () => {
+                setSys1Meta({ model: '', unitNum: '', operator: '', tanggal: '', jam: '' });
+                setSys1Checklist({});
+                setSys1TtdOp('');
+                setSys1TtdSpv('');
+                setSys1ActiveRecordId(null);
+            };
+
+            const handleHmSubmit = (e) => {
+                e.preventDefault();
+                let valid = true;
+                
+                const formData = new URLSearchParams();
+                let adaDataDikirim = false; 
+
+                btrUnits.concat(pliUnits).forEach(u => {
+                    const p = parseFloat(hmData[`pagi_${u.id}`]);
+                    const m = parseFloat(hmData[`malam_${u.id}`]);
+                    
+                    if(!isNaN(p) && !isNaN(m) && m < p) {
+                        valid = false;
+                    }
+                    
+                    if (!isNaN(p) || !isNaN(m)) {
+                        adaDataDikirim = true;
+                        const tgl = hmData[`tgl_${u.id}`] || new Date().toISOString().split('T')[0];
+                        const ket = hmData[`ket_${u.id}`] || "";
+                        
+                        formData.append(`tgl_${u.id}`, tgl);
+                        formData.append(`pagi_${u.id}`, !isNaN(p) ? p : "");
+                        formData.append(`malam_${u.id}`, !isNaN(m) ? m : "");
+                        formData.append(`ket_${u.id}`, ket);
+                    }
+                });
+
+                if(!valid) {
+                    alert("⛔ GAGAL: HM Malam tidak boleh lebih kecil dari HM Pagi!");
+                    return;
+                }
+
+                if(!adaDataDikirim) {
+                    alert("⚠️ Peringatan: Tidak ada data Hour Meter yang diisi.");
+                    return;
+                }
+
+                fetch(GOOGLE_SHEET_URL, {
+                    method: 'POST',
+                    body: formData 
+                })
+                .then(response => response.text()) 
+                .then(text => {
+                    if (text.includes("Success")) {
+                        alert("✅ BERHASIL: Data rekap Hour Meter tersimpan di Google Sheets.");
+                        setHmData({}); 
+                        
+                        let elements = e.target.querySelectorAll('input');
+                        elements.forEach(el => {
+                            if (el.type !== 'date') el.value = ''; 
+                        });
+                    } else {
+                        alert("❌ GAGAL: " + text);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert("❌ GAGAL: Koneksi terputus.");
+                });
+            };
+
+            const handleSys2Photo = (idx, e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                        const img = new Image();
+                        img.onload = () => {
+                            const canvas = document.createElement('canvas');
+                            const MAX_WIDTH = 800; 
+                            const scaleSize = MAX_WIDTH / img.width;
+                            canvas.width = MAX_WIDTH;
+                            canvas.height = img.height * scaleSize;
+                            
+                            const ctx = canvas.getContext('2d');
+                            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                            
+                            const compressedBase64 = canvas.toDataURL('image/jpeg', 0.6);
+                            
+                            setSys2Checks(prev => {
+                                const updated = [...prev];
+                                updated[idx] = { ...updated[idx], img: compressedBase64 };
+                                return updated;
+                            });
+                        };
+                        img.src = event.target.result;
+                    };
+                    reader.readAsDataURL(file);
+                }
+            };
+
+            const handleSys2CheckVal = (idx, status) => {
+                setSys2Checks(prev => {
+                    const updated = [...prev];
+                    updated[idx] = { ...updated[idx], val: updated[idx]?.val === status ? '' : status };
+                    return updated;
+                });
+            };
+
+            const addSys2FindingRow = () => {
+                setSys2FindingsList([...sys2FindingsList, { id: Date.now(), temuan: '', perbaikan: '', pic: '', target: '' }]);
+            };
+
+            const removeSys2FindingRow = (id) => {
+                if(sys2FindingsList.length > 1) {
+                    setSys2FindingsList(sys2FindingsList.filter(row => row.id !== id));
+                }
+            };
+
+            const updateSys2FindingRow = (id, field, value) => {
+                setSys2FindingsList(sys2FindingsList.map(row => row.id === id ? { ...row, [field]: value } : row));
+            };
+
+            const saveSys2ToPool = () => {
+                if (!sys2Meta.inspectedBy.trim()) {
+                    alert("⚠️ Harap isi nama Personil pada kolom 'Inspected By'!");
+                    return;
+                }
+                if (!sys2Sigs.sigInspector) {
+                    alert("⚠️ Inspektor penanggung jawab wajib menandatangani berkas!");
+                    return;
+                }
+
+                setIsSaving(true); 
+
+                const targetId = sys2ActiveId || 'REC_' + Date.now();
+                const newRecord = {
+                    id: targetId,
+                    area: sys2Area,
+                    docNo: weeklyDocNumbers[sys2Area] || 'BTR-SCM-001',
+                    tanggal: sys2Meta.tanggal,
+                    jam: sys2Meta.jam,
+                    inspectedBy: sys2Meta.inspectedBy,
+                    checks: sys2Checks,
+                    findingsList: sys2FindingsList,
+                    sigInspector: sys2Sigs.sigInspector,
+                    nameInspector: sys2Sigs.nameInspector,
+                    nameSpv: sys2Sigs.nameSpv || '',
+                    nameHead: sys2Sigs.nameHead || '',
+                    sigSpv: sys2Sigs.sigSpv || '',
+                    sigHead: sys2Sigs.sigHead || '', // Tambahan untuk menyimpan TTD HOD
+                    status: "Pending" 
+                };
+
+                fetch(`${FIREBASE_URL}/sys2_logs/${targetId}.json`, {
+                    method: 'PUT',
+                    body: JSON.stringify(newRecord)
+                })
+                .then(() => {
+                    setIsSaving(false); 
+                    alert("🎯 Berkas checklist mingguan berhasil disimpan ke Cloud Database Vault!");
+                    resetSys2Context();
+                    fetchCloudData();
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }).catch(err => {
+                    setIsSaving(false);
+                    alert("❌ Koneksi Gagal, pastikan internet lancar!");
+                });
+            };
+
+            const deleteSys2Record = (id, e) => {
+                if (e) e.stopPropagation();
+                if(confirm("Apakah Anda yakin ingin menghapus dokumen mingguan ini secara permanen dari database?")) {
+                    fetch(`${FIREBASE_URL}/sys2_logs/${id}.json`, { method: 'DELETE' })
+                    .then(res => {
+                        if(res.ok){
+                            alert("✅ Data berhasil dihapus dari cloud.");
+                            fetchCloudData();
+                        } else {
+                            alert("❌ Gagal menghapus data di server cloud.");
+                        }
+                    })
+                    .catch(err => {
+                        console.error(err);
+                        alert("❌ Error saat menghubungi server cloud.");
+                    });
+                }
+            };
+
+            const resetSys2Context = () => {
+                const now = new Date();
+                const d = now.toISOString().split('T')[0];
+                const t = String(now.getHours()).padStart(2, '0') + ":" + String(now.getMinutes()).padStart(2, '0');
+                
+                setSys2ActiveId(null);
+                setSys2Meta({ tanggal: d, jam: t, inspectedBy: '' }); 
+                
+                const libraryItems = weeklyLibrary[sys2Area] || [];
+                setSys2Checks(libraryItems.map(() => ({ val: '', img: '' })));
+
+                setSys2FindingsList([{ id: Date.now(), temuan: '', perbaikan: '', pic: '', target: '' }]);
+                setSys2Sigs({ sigInspector:'', nameInspector:'', nameSpv:'', nameHead:'', sigSpv:'', sigHead:'' });
+                setSys2ReadOnly(false);
+            };
+
+            const openSys2Record = (rec) => {
+                setSys2ActiveId(rec.id);
+                setSys2Area(rec.area);
+                setSys2Meta({ tanggal: rec.tanggal, jam: rec.jam, inspectedBy: rec.inspectedBy });
+                setSys2Checks(rec.checks || []);
+                setSys2FindingsList(rec.findingsList || [{ id: Date.now(), temuan: '', perbaikan: '', pic: '', target: '' }]);
+                setSys2Sigs({
+                    sigInspector: rec.sigInspector || '',
+                    nameInspector: rec.nameInspector || '',
+                    nameSpv: rec.nameSpv || '',
+                    nameHead: rec.nameHead || '',
+                    sigSpv: rec.sigSpv || '',
+                    sigHead: rec.sigHead || ''
+                });
+                setSys2ReadOnly(true);
+                setActiveTab('form');
+            };
+
+            // FUNGSI BARU UNTUK MENG-HANDLE ALUR VALIDASI BERTINGKAT
+            const handleSys2Action = () => {
+                if (!sys2ActiveId) return;
+                const targetRecord = sys2Records.find(f => f.id === sys2ActiveId);
+                if (!targetRecord) return;
+
+                if (targetRecord.status === 'Pending') {
+                    // ACTION 1: SPV memvalidasi berkas -> Status menjadi 'Pending HOD'
+                    if (!sys2Sigs.sigSpv || !sys2Sigs.nameSpv.trim()) {
+                        alert("⚠️ Supervisor SCM wajib mengisi nama dan menandatangani berkas sebelum persetujuan!");
+                        return;
+                    }
+                    const updatedRecord = { 
+                        ...targetRecord, 
+                        status: 'Pending HOD',
+                        sigSpv: sys2Sigs.sigSpv,
+                        nameSpv: sys2Sigs.nameSpv
+                    };
+                    fetch(`${FIREBASE_URL}/sys2_logs/${sys2ActiveId}.json`, {
+                        method: 'PUT',
+                        body: JSON.stringify(updatedRecord)
+                    }).then(() => {
+                        alert("🎯 Terima kasih");
+                        setActiveTab('dashboard');
+                        setSys2ActiveId(null);
+                        setSys2ReadOnly(false);
+                        resetSys2Context();
+                        fetchCloudData();
+                    }).catch(e => console.error(e));
+
+                } else if (targetRecord.status === 'Pending HOD') {
+                    // ACTION 2: HOD memvalidasi berkas -> Status menjadi 'Approved' lalu Dokumen Dicetak
+                    if (!sys2Sigs.sigHead || !sys2Sigs.nameHead.trim()) {
+                        alert("⚠️ SCM Department Head wajib mengisi nama dan menandatangani berkas sebelum persetujuan akhir!");
+                        return;
+                    }
+                    const updatedRecord = { 
+                        ...targetRecord, 
+                        status: 'Approved',
+                        sigHead: sys2Sigs.sigHead,
+                        nameHead: sys2Sigs.nameHead
+                    };
+                    fetch(`${FIREBASE_URL}/sys2_logs/${sys2ActiveId}.json`, {
+                        method: 'PUT',
+                        body: JSON.stringify(updatedRecord)
+                    }).then(() => {
+                        alert("🎯 Terima kasih");
+                        setTimeout(() => {
+                            window.print();
+                            setActiveTab('dashboard');
+                            setSys2ActiveId(null);
+                            setSys2ReadOnly(false);
+                            resetSys2Context();
+                            fetchCloudData();
+                        }, 400);
+                    }).catch(e => console.error(e));
+
+                } else if (targetRecord.status === 'Approved') {
+                    // ACTION 3: Jika sudah Approved, cukup tampilkan layar print
+                    window.print();
+                }
+            };
+
+            if (systemMode === 'core-dashboard') {
+                return (
+                    <div className="min-h-screen bg-slate-950 relative flex flex-col items-center justify-center p-4 md:p-8 text-white print-hidden overflow-hidden">
+                        
+                        {/* Efek Cahaya Latar Belakang (Glow Blob) */}
+                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-red-600/10 blur-[120px] rounded-full pointer-events-none"></div>
+                        <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-orange-600/5 blur-[100px] rounded-full pointer-events-none"></div>
+
+                        <div className="text-center max-w-3xl mb-12 md:mb-16 relative z-10">
+                            {/* Top Badge */}
+                            <div className="inline-flex items-center gap-2 bg-slate-900/80 border border-slate-700/50 text-slate-300 text-[10px] md:text-xs font-semibold uppercase tracking-widest px-5 py-2.5 rounded-full mb-8 shadow-xl backdrop-blur-sm">
+                                <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
+                                PT Batutua Tembaga Raya — Supply Chain Management
+                            </div>
+                            
+                            {/* Main Heading */}
+                            <h1 className="text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tighter uppercase leading-tight text-slate-100">
+                                SCM WETAR <br/>
+                                <span className="bg-gradient-to-r from-red-500 via-orange-400 to-red-500 bg-clip-text text-transparent drop-shadow-[0_0_30px_rgba(239,68,68,0.2)]">
+                                    Inspeksi Area & P2H
+                                </span>
+                            </h1>
+                            
+                            {/* Subtitle */}
+                            <p className="text-slate-400 text-sm md:text-base mt-6 max-w-xl mx-auto font-light leading-relaxed">
+                                
+                            </p>
+                        </div>
+
+                        {/* Menu Cards */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-4xl px-2 relative z-10">
+                            
+                            {/* CARD 1: P2H */}
+                            <div onClick={() => { setSystemMode('sys1'); setActiveTab('dashboard'); }} 
+                                 className="group relative bg-slate-900/40 backdrop-blur-xl border border-slate-800 rounded-3xl p-8 cursor-pointer overflow-hidden transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_20px_40px_-15px_rgba(239,68,68,0.2)] hover:border-red-500/30">
+                                {/* Decorative Card Top Line */}
+                                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-red-500 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                                {/* Decorative Card Glow */}
+                                <div className="absolute -inset-24 bg-gradient-to-br from-red-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-2xl pointer-events-none"></div>
+                                
+                                {/* Icon */}
+                                <div className="relative w-16 h-16 mb-6 rounded-2xl bg-slate-800/80 border border-slate-700/50 flex items-center justify-center text-3xl shadow-inner group-hover:bg-red-500/10 group-hover:border-red-500/30 transition-all duration-300 z-10">
+                                    🚜
+                                </div>
+                                
+                                {/* Text Content */}
+                                <h2 className="text-2xl font-bold text-slate-100 group-hover:text-white transition-colors relative z-10 tracking-tight">P2H UNIT SCM</h2>
+                                <p className="text-slate-400 text-sm mt-3 font-light leading-relaxed relative z-10 group-hover:text-slate-300 transition-colors">
+                                    Pemeriksaan Harian (Pre-Start Check) SCM: Crane, Reach Stacker, Forklift, Prime Mover, dll.
+                                </p>
+                                
+                                {/* Link Action */}
+                                <div className="mt-8 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-slate-500 group-hover:text-red-400 transition-colors relative z-10">
+                                    <span>Masuk Modul</span> 
+                                    <span className="transform group-hover:translate-x-2 transition-transform duration-300">→</span>
+                                </div>
+                            </div>
+
+                            {/* CARD 2: WEEKLY */}
+                            <div onClick={() => { setSystemMode('sys2'); setActiveTab('dashboard'); }} 
+                                 className="group relative bg-slate-900/40 backdrop-blur-xl border border-slate-800 rounded-3xl p-8 cursor-pointer overflow-hidden transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_20px_40px_-15px_rgba(249,115,22,0.2)] hover:border-orange-500/30">
+                                {/* Decorative Card Top Line */}
+                                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-orange-500 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                                {/* Decorative Card Glow */}
+                                <div className="absolute -inset-24 bg-gradient-to-br from-orange-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-2xl pointer-events-none"></div>
+                                
+                                {/* Icon */}
+                                <div className="relative w-16 h-16 mb-6 rounded-2xl bg-slate-800/80 border border-slate-700/50 flex items-center justify-center text-3xl shadow-inner group-hover:bg-orange-500/10 group-hover:border-orange-500/30 transition-all duration-300 z-10">
+                                    📋
+                                </div>
+                                
+                                {/* Text Content */}
+                                <h2 className="text-2xl font-bold text-slate-100 group-hover:text-white transition-colors relative z-10 tracking-tight">Weekly Inspection</h2>
+                                <p className="text-slate-400 text-sm mt-3 font-light leading-relaxed relative z-10 group-hover:text-slate-300 transition-colors">
+                                    
+                                </p>
+                                
+                                {/* Link Action */}
+                                <div className="mt-8 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-slate-500 group-hover:text-orange-400 transition-colors relative z-10">
+                                    <span>Masuk Modul</span> 
+                                    <span className="transform group-hover:translate-x-2 transition-transform duration-300">→</span>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        {/* Footer */}
+                        <footer className="mt-20 relative z-10 text-slate-600 text-[10px] sm:text-xs font-mono text-center tracking-widest px-4 border-t border-slate-800/50 pt-6 w-full max-w-4xl mx-auto">
+                            PT BATUTUA TEMBAGA RAYA • SUPPLY CHAIN MANAGEMENT-WETAR © 2026
+                        </footer>
+                    </div>
+                );
+            }
+
+            if (systemMode === 'sys1') {
+                return (
+                    <div className="min-h-screen bg-gradient-to-br from-slate-800 via-slate-900 to-slate-950 text-slate-200 flex flex-col justify-between no-black-pdf relative overflow-hidden">
+                        
+                        {/* Background Glow Sub-Menu */}
+                        <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-red-600/10 blur-[120px] rounded-full pointer-events-none print-hidden"></div>
+
+                        <header className="bg-slate-900/80 backdrop-blur-md text-white p-4 flex flex-col lg:flex-row gap-4 items-center justify-between print-hidden shadow-lg sticky top-0 z-50 w-full border-b border-slate-700/50">
+                            <div className="flex items-center gap-4 w-full lg:w-auto">
+                                <button onClick={() => setSystemMode('core-dashboard')} className="bg-slate-800 hover:bg-slate-700 border border-slate-600 text-white font-bold py-2 px-4 rounded-xl text-xs transition duration-200 shrink-0 shadow-inner flex items-center gap-1">
+                                    <span>⬅</span> <span className="hidden sm:inline">Portal</span>
+                                </button>
+                                <div className="truncate">
+                                    <h1 className="font-extrabold text-sm md:text-lg uppercase tracking-wide truncate text-white">P2H UNIT SCM</h1>
+                                    <p className="text-[10px] text-red-400 uppercase font-black tracking-widest mt-0.5">PT BTR — SCM</p>
+                                </div>
+                            </div>
+                            <nav className="flex gap-2 w-full lg:w-auto justify-end overflow-x-auto py-1 custom-scrollbar">
+                                <button onClick={() => setActiveTab('dashboard')} className={`px-4 py-2 rounded-xl text-xs font-bold transition duration-200 shrink-0 border ${activeTab==='dashboard' ? 'bg-red-600 border-red-500 text-white shadow-md':'bg-slate-800/50 border-slate-700 text-slate-300 hover:bg-slate-700'}`}>Dashboard & HM</button>
+                                <button onClick={() => { resetSys1Form(); setActiveTab('form'); }} className={`px-4 py-2 rounded-xl text-xs font-bold transition duration-200 shrink-0 border ${activeTab==='form' ? 'bg-red-600 border-red-500 text-white shadow-md':'bg-slate-800/50 border-slate-700 text-slate-300 hover:bg-slate-700'}`}>📝 Input P2H</button>
+                                <button onClick={() => handleVerifikasiClick('antrean')} className={`px-4 py-2 rounded-xl text-xs font-bold transition duration-200 shrink-0 border ${activeTab==='antrean' ? 'bg-red-600 border-red-500 text-white shadow-md':'bg-slate-800/50 border-slate-700 text-slate-300 hover:bg-slate-700'}`}>📂 Verifikasi</button>
+                            </nav>
+                        </header>
+
+                        <main className="flex-1 p-4 md:p-8 max-w-7xl w-full mx-auto print-area no-black-pdf relative z-10">
+                            {activeTab === 'dashboard' && (
+                                <div className="space-y-6 animate-fade-in">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 print-hidden">
+                                        <div onClick={() => setActiveTab('form')} className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 p-6 rounded-2xl shadow-sm cursor-pointer hover:border-red-500 hover:shadow-[0_10px_25px_-5px_rgba(239,68,68,0.2)] transition-all group duration-300">
+                                            <div className="text-3xl mb-2 bg-slate-900/50 w-12 h-12 rounded-xl flex items-center justify-center group-hover:bg-red-500/20 group-hover:scale-110 transition-all">📝</div>
+                                            <h3 className="font-bold text-slate-100">Form Input P2H Unit</h3>
+                                            <p className="text-xs text-slate-400 mt-1 font-light"></p>
+                                        </div>
+                                        <div onClick={() => handleVerifikasiClick('antrean')} className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 p-6 rounded-2xl shadow-sm cursor-pointer hover:border-red-500 hover:shadow-[0_10px_25px_-5px_rgba(239,68,68,0.2)] transition-all group duration-300">
+                                            <div className="text-3xl mb-2 bg-slate-900/50 w-12 h-12 rounded-xl flex items-center justify-center group-hover:bg-red-500/20 group-hover:scale-110 transition-all">📂</div>
+                                            <h3 className="font-bold text-slate-100">Verifikasi Supervisor</h3>
+                                            <p className="text-xs text-slate-400 mt-1 font-light">Validasi Doc P2H</p>
+                                        </div>
+                                    </div>
+
+                                    <div className="bg-white text-slate-900 border border-slate-200 rounded-2xl p-4 md:p-8 shadow-xl">
+                                        <div className="text-center mb-6 border-b border-slate-200 pb-4">
+                                            <h2 className="text-xl md:text-3xl font-black text-slate-900 uppercase tracking-tight">REKAP HOUR METER UNIT SCM</h2>
+                                            <p className="text-xs text-slate-500 mt-1 font-medium font-mono">Monitoring HM Unit</p>
+                                        </div>
+
+                                        <form onSubmit={handleHmSubmit} className="space-y-8">
+                                            <div className="border border-slate-200 rounded-xl overflow-hidden shadow-xs bg-slate-50">
+                                                <div className="bg-slate-900 px-4 py-3 text-xs font-extrabold tracking-wider text-white uppercase">DAFTAR UNIT  BTR</div>
+                                                <div className="overflow-x-auto custom-scrollbar">
+                                                    <table className="w-full text-xs text-left min-w-[700px] border-collapse bg-white">
+                                                        <thead>
+                                                            <tr className="bg-slate-50 border-b border-slate-200 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                                                                <th className="p-3 w-1/4">Tanggal </th>
+                                                                <th className="p-3 text-center">Unit</th>
+                                                                <th className="p-3 text-center">HM Shift Pagi</th>
+                                                                <th className="p-3 text-center">HM Shift Malam</th>
+                                                                <th className="p-3">Catatan / Keterangan</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody className="divide-y divide-slate-100 text-slate-700">
+                                                            {btrUnits.map(u => (
+                                                                <tr key={u.id} className="hover:bg-slate-50/60 transition-colors">
+                                                                    <td className="p-2.5">
+                                                                        <input type="date" className="border border-slate-300 focus:border-red-500 focus:ring-1 focus:ring-red-500 rounded-lg p-1.5 text-xs outline-none font-semibold text-slate-800 w-full max-w-[150px] bg-white transition-all" defaultValue={new Date().toISOString().split('T')[0]} onChange={e => setHmData({...hmData, [`tgl_${u.id}`]: e.target.value})} />
+                                                                    </td>
+                                                                    <td className="p-2.5 font-bold text-center text-red-600 bg-slate-50/50">{u.n}</td>
+                                                                    <td className="p-2.5">
+                                                                        <input type="number" step="0.1" placeholder="0.0" className="w-24 text-center border border-slate-300 focus:border-red-500 focus:ring-1 focus:ring-red-500 rounded-lg p-1.5 mx-auto block outline-none font-medium text-slate-900 bg-white" onChange={e => setHmData({...hmData, [`pagi_${u.id}`]: e.target.value})} />
+                                                                    </td>
+                                                                    <td className="p-2.5">
+                                                                        <input type="number" step="0.1" placeholder="0.0" className="w-24 text-center border border-slate-300 focus:border-red-500 focus:ring-1 focus:ring-red-500 rounded-lg p-1.5 mx-auto block outline-none font-medium text-slate-900 bg-white" onChange={e => setHmData({...hmData, [`malam_${u.id}`]: e.target.value})} />
+                                                                    </td>
+                                                                    <td className="p-2.5">
+                                                                        <input type="text" placeholder="Kondisi operasional unit..." className="w-full border border-slate-300 focus:border-red-500 focus:ring-1 focus:ring-red-500 rounded-lg p-1.5 outline-none font-normal text-slate-800 bg-white" onChange={e => setHmData({...hmData, [`ket_${u.id}`]: e.target.value})} />
+                                                                    </td>
+                                                                </tr>
+                                                            ))}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+
+                                            <div className="border border-slate-200 rounded-xl overflow-hidden shadow-xs bg-slate-50">
+                                                <div className="bg-slate-900 px-4 py-3 text-xs font-extrabold tracking-wider text-white uppercase">DAFTAR UNIT CONTRACTOR</div>
+                                                <div className="overflow-x-auto custom-scrollbar">
+                                                    <table className="w-full text-xs text-left min-w-[700px] border-collapse bg-white">
+                                                        <thead>
+                                                            <tr className="bg-slate-50 border-b border-slate-200 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                                                                <th className="p-3 w-1/4">Tanggal </th>
+                                                                <th className="p-3 text-center">Unit</th>
+                                                                <th className="p-3 text-center">HM Shift Pagi</th>
+                                                                <th className="p-3 text-center">HM Shift Malam</th>
+                                                                <th className="p-3">Catatan / Keterangan</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody className="divide-y divide-slate-100 text-slate-700">
+                                                            {pliUnits.map(u => (
+                                                                <tr key={u.id} className="hover:bg-slate-50/60 transition-colors">
+                                                                    <td className="p-2.5">
+                                                                        <input type="date" className="border border-slate-300 focus:border-red-500 focus:ring-1 focus:ring-red-500 rounded-lg p-1.5 text-xs outline-none font-semibold text-slate-800 w-full max-w-[150px] bg-white transition-all" defaultValue={new Date().toISOString().split('T')[0]} onChange={e => setHmData({...hmData, [`tgl_${u.id}`]: e.target.value})} />
+                                                                    </td>
+                                                                    <td className="p-2.5 font-bold text-center text-blue-600 bg-slate-50/50">{u.n}</td>
+                                                                    <td className="p-2.5">
+                                                                        <input type="number" step="0.1" placeholder="0.0" className="w-24 text-center border border-slate-300 focus:border-red-500 focus:ring-1 focus:ring-red-500 rounded-lg p-1.5 mx-auto block outline-none font-medium text-slate-900 bg-white" onChange={e => setHmData({...hmData, [`pagi_${u.id}`]: e.target.value})} />
+                                                                    </td>
+                                                                    <td className="p-2.5">
+                                                                        <input type="number" step="0.1" placeholder="0.0" className="w-24 text-center border border-slate-300 focus:border-red-500 focus:ring-1 focus:ring-red-500 rounded-lg p-1.5 mx-auto block outline-none font-medium text-slate-900 bg-white" onChange={e => setHmData({...hmData, [`malam_${u.id}`]: e.target.value})} />
+                                                                    </td>
+                                                                    <td className="p-2.5">
+                                                                        <input type="text" placeholder="Kondisi operasional unit..." className="w-full border border-slate-300 focus:border-red-500 focus:ring-1 focus:ring-red-500 rounded-lg p-1.5 outline-none font-normal text-slate-800 bg-white" onChange={e => setHmData({...hmData, [`ket_${u.id}`]: e.target.value})} />
+                                                                    </td>
+                                                                </tr>
+                                                            ))}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+
+                                            <button type="submit" className="w-full py-4 bg-red-600 text-white font-bold text-xs md:text-sm rounded-xl hover:bg-red-700 active:scale-[0.99] shadow-md transition-all uppercase tracking-wider">🚀 SAVE</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            )}
+
+                            {activeTab === 'form' && (
+                                <div className="space-y-4 animate-fade-in text-slate-900">
+                                    <div className="bg-white border border-slate-200 p-4 rounded-2xl flex flex-col sm:flex-row sm:items-center gap-3 print-hidden shadow-xs">
+                                        <label className="font-black text-xs text-slate-700 uppercase tracking-wider shrink-0">Pilih Unit:</label>
+                                        <select value={sys1Unit} onChange={(e) => { setSys1Unit(e.target.value); setSys1Checklist({}); }} className="border border-slate-200 font-bold text-xs p-2.5 rounded-xl bg-slate-50 text-slate-900 w-full sm:w-64 outline-none focus:border-red-500 cursor-pointer">
+                                            {Object.keys(unitDataScript1).map(k => (
+                                                <option key={k} value={k}>{unitDataScript1[k].name}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+
+                                    <div className="bg-white border border-slate-200 rounded-2xl p-4 md:p-10 print-area shadow-xl no-black-pdf overflow-hidden">
+                                        <div className="text-center border-b-2 border-slate-900 pb-4 mb-6">
+                                            <h2 className="text-lg md:text-2xl font-black uppercase tracking-tight text-slate-900">DAILY PRESTART CHECK / LAPORAN INSPEKSI P2H</h2>
+                                            <div className="text-xs md:text-sm font-extrabold text-red-600 mt-1 uppercase tracking-widest bg-red-50 px-3 py-1.5 inline-block rounded-full border border-red-100">{unitDataScript1[sys1Unit].name}</div>
+                                        </div>
+
+                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs mb-6 text-slate-900 bg-slate-50 p-4 rounded-xl border border-slate-200">
+                                            <div className="space-y-2">
+                                                <div><label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider">MODEL UNIT</label><input type="text" className="bg-white border border-slate-300 rounded-lg w-full p-2 font-bold text-slate-800 outline-none mt-1 focus:border-slate-400" value={sys1Meta.model} onChange={e => setSys1Meta({...sys1Meta, model: e.target.value})} disabled={sys1ActiveRecordId!==null} /></div>
+                                                <div><label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider">UNIT NUMBER</label><input type="text" className="bg-white border border-slate-300 rounded-lg w-full p-2 font-bold text-slate-800 outline-none mt-1 focus:border-slate-400" value={sys1Meta.unitNum} onChange={e => setSys1Meta({...sys1Meta, unitNum: e.target.value})} disabled={sys1ActiveRecordId!==null} /></div>
+                                            </div>
+                                            <div className="space-y-2">
+                                                <div><label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider">NAMA OPERATOR</label><input type="text" className="bg-white border border-slate-300 rounded-lg w-full p-2 font-bold text-slate-800 outline-none mt-1 focus:border-slate-400" value={sys1Meta.operator} onChange={e => setSys1Meta({...sys1Meta, operator: e.target.value})} disabled={sys1ActiveRecordId!==null} /></div>
+                                                <div><label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider">JAM CHECK</label><input type="time" className="bg-white border border-slate-300 rounded-lg w-full p-2 font-bold text-red-600 outline-none mt-1 focus:border-slate-400" value={sys1Meta.jam} onChange={e => setSys1Meta({...sys1Meta, jam: e.target.value})} disabled={sys1ActiveRecordId!==null} /></div>
+                                            </div>
+                                            <div className="space-y-2">
+                                                <div><label className="block text-[10px] font-bold text-slate-500 tracking-wider uppercase">TANGGAL PEMERIKSAAN</label><input type="date" className="bg-white border border-slate-300 rounded-lg w-full p-2 font-bold text-red-600 outline-none mt-1 focus:border-slate-400" value={sys1Meta.tanggal} onChange={e => setSys1Meta({...sys1Meta, tanggal: e.target.value})} disabled={sys1ActiveRecordId!==null} /></div>
+                                            </div>
+                                        </div>
+
+                                        <div className="border border-slate-200 rounded-xl overflow-hidden mb-6 shadow-xs">
+                                            <div className="overflow-x-auto custom-scrollbar">
+                                                <table className="w-full text-xs text-left border-collapse bg-white min-w-[600px]">
+                                                    <thead className="bg-slate-900 text-white text-[10px] uppercase font-bold tracking-wider">
+                                                        <tr>
+                                                            <th className="p-3.5 w-[40%] border border-slate-400">MATRIKS FASILITAS & ELEMEN KOMPONEN UNIT</th>
+                                                            <th className="p-3.5 text-center w-[12%] bg-emerald-800 border border-slate-400">BAIK</th>
+                                                            <th className="p-3.5 text-center w-[12%] bg-red-800 border border-slate-400">RUSAK</th>
+                                                            <th className="p-3.5 w-[36%] border border-slate-400">KETERANGAN OPERATOR</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody className="text-slate-900 divide-y divide-slate-200">
+    {unitDataScript1[sys1Unit].items.map((section, sIdx) => (
+        <React.Fragment key={sIdx}>
+            <tr className="bg-slate-100">
+                <td colSpan="4" className="p-3 font-extrabold text-slate-800 uppercase tracking-wider border-y border-slate-200 text-[11px] font-mono">{section.section}</td>
+            </tr>
+            {section.tasks.map((task, tIdx) => {
+                const key = `${sIdx}-${tIdx}`;
+                const isBaik = sys1Checklist[key] === 'baik';
+                const isRusak = sys1Checklist[key] === 'rusak';
+                return (
+                    <tr key={tIdx} className="bg-white hover:bg-slate-50 transition-colors">
+                        <td className="p-3 font-medium text-slate-700 leading-relaxed border border-slate-300">{task}</td>
+                        <td className="p-3 text-center border border-slate-300">
+                            <input type="checkbox" checked={isBaik} disabled={sys1ActiveRecordId!==null} onChange={() => handleSys1Check(key, 'baik')} className="w-5 h-5 rounded accent-emerald-500 cursor-pointer disabled:opacity-100" />
+                        </td>
+                        <td className="p-3 text-center border border-slate-300">
+                            <input type="checkbox" checked={isRusak} disabled={sys1ActiveRecordId!==null} onChange={() => handleSys1Check(key, 'rusak')} className="w-5 h-5 rounded accent-red-500 cursor-pointer disabled:opacity-100" />
+                        </td>
+                        <td className="p-2 border border-slate-300">
+                            <textarea rows="1" disabled={sys1ActiveRecordId!==null} className="w-full bg-transparent border-b border-slate-200 p-1 text-xs outline-none resize-none text-slate-800 focus:border-slate-400" placeholder="" value={sys1Checklist[`${key}_ket`] || ''} onChange={(e) => setSys1Checklist(prev => ({ ...prev, [`${key}_ket`]: e.target.value }))}></textarea>
+                        </td>
+                    </tr>
+                );
+            })}
+        </React.Fragment>
+                                                        ))}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 border-2 border-slate-100 rounded-xl p-4 md:p-6 bg-slate-50/50 text-center no-black-pdf">
+                                            <div className="flex flex-col items-center justify-between gap-3 min-h-[150px]">
+                                                <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Personil Pemeriksa (Operator)</span>
+                                                <SignaturePad 
+                                                    savedImage={sys1TtdOp} 
+                                                    onSave={(img) => setSys1TtdOp(img)} 
+                                                    readOnly={sys1ActiveRecordId !== null} 
+                                                    placeholder="Tanda Tangan Operator"
+                                                />
+                                                <span className="text-xs font-bold text-slate-800 border-t border-slate-200 pt-2 w-full max-w-[180px] truncate">{sys1Meta.operator || '---'}</span>
+                                            </div>
+                                            <div className="flex flex-col items-center justify-between gap-3 min-h-[150px] pt-4 sm:pt-0 border-t sm:border-t-0 sm:border-l border-slate-200">
+                                                <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Persetujuan Otoritas (Supervisor)</span>
+                                                {sys1ActiveRecordId ? (
+                                                    <SignaturePad 
+                                                        savedImage={sys1TtdSpv} 
+                                                        onSave={(img) => setSys1TtdSpv(img)} 
+                                                        readOnly={sys1Logs.find(x => x.id === sys1ActiveRecordId)?.status === 'approved'} 
+                                                        placeholder="Tanda Tangan SPV"
+                                                    />
+                                                ) : (
+                                                    <div className="text-xs font-semibold text-amber-600 bg-amber-50 p-3 border border-amber-200 rounded-xl max-w-[180px] my-auto italic flex items-center gap-1">🔒 Terkunci Otomatis</div>
+                                                )}
+                                                <span className="text-xs font-bold text-slate-800 border-t border-slate-200 pt-2 w-full max-w-[180px]">Supervisor SCM</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex flex-col sm:flex-row justify-center gap-3 print-hidden pb-8 px-2 relative z-10">
+                                        {!sys1ActiveRecordId ? (
+                                            <button type="button" disabled={isSaving} onClick={submitSys1ToLog} className={`bg-red-600 text-white text-xs font-bold uppercase tracking-wider py-3 px-6 rounded-xl shadow-md transition-all w-full sm:w-auto ${isSaving ? 'opacity-50 cursor-not-allowed' : 'hover:bg-red-700 active:scale-95'}`}>
+                                                {isSaving ? '⏳ Memproses...' : 'SAVE'}
+                                            </button>
+                                        ) : (
+                                            sys1Logs.find(x => x.id === sys1ActiveRecordId)?.status === 'approved' ? (
+                                                <button type="button" onClick={() => window.print()} className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold uppercase tracking-wider py-3 px-6 rounded-xl shadow-md transition-all active:scale-95 w-full sm:w-auto">🖨️ CETAK / DOWNLOAD PDF</button>
+                                            ) : (
+                                                <button type="button" onClick={saveSys1SpvApproval} className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold uppercase tracking-wider py-3 px-6 rounded-xl shadow-md transition-all active:scale-95 w-full sm:w-auto">✔️ VALIDASI & SIMPAN</button>
+                                            )
+                                        )}
+                                        <button type="button" onClick={() => { resetSys1Form(); setActiveTab('dashboard'); }} className="bg-slate-800 hover:bg-slate-700 border border-slate-600 text-white text-xs font-bold uppercase tracking-wider py-3 px-6 rounded-xl shadow-xs transition-all w-full sm:w-auto">KEMBALI</button>
+                                    </div>
+                                </div>
+                            )}
+
+                            {activeTab === 'antrean' && (
+                                <div className="bg-slate-900/90 backdrop-blur-md text-white p-4 md:p-6 rounded-2xl shadow-2xl border border-slate-700 animate-fade-in relative z-10">
+                                    <h3 className="text-red-400 font-extrabold text-xs md:text-sm uppercase tracking-wider border-b border-slate-700/80 pb-3 mb-4 flex items-center gap-2">
+                                        <span>📂</span> ANTREAN CLOUD VALIDASI LOG P2H HARIAN SCM
+                                    </h3>
+                                    <div className="overflow-x-auto custom-scrollbar">
+                                        <table className="w-full text-xs text-left border-collapse min-w-[700px]">
+                                            <thead>
+                                                <tr className="bg-slate-950 text-slate-400 uppercase text-[10px] tracking-widest font-bold border-b border-slate-700">
+                                                    <th className="p-3.5">Waktu Submit</th>
+                                                    <th className="p-3.5">Jenis Unit</th>
+                                                    <th className="p-3.5">No. Unit</th>
+                                                    <th className="p-3.5">Nama Operator</th>
+                                                    <th className="p-3.5">Status Dokumen</th>
+                                                    <th className="p-3.5 text-center">Operasi Dokumen</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody className="divide-y divide-slate-800 text-slate-300">
+                                                {sys1Logs.length === 0 ? (
+                                                    <tr><td colSpan="6" className="text-center p-12 text-slate-500 italic font-light">Belum ada data pemeriksaan harian masuk dalam 7 hari terakhir.</td></tr>
+                                                ) : (
+                                                    sys1Logs.map(f => (
+                                                        <tr key={f.id} className="hover:bg-slate-800/60 transition-colors">
+                                                            <td className="p-3.5 font-mono text-slate-400 text-[11px]">{f.timestamp}</td>
+                                                            <td className="p-3.5 font-bold text-red-400">{f.unit}</td>
+                                                            <td className="p-3.5 font-semibold text-slate-200">{f.unitNum}</td>
+                                                            <td className="p-3.5 truncate max-w-[140px] font-light">{f.operator}</td>
+                                                            <td className="p-3.5">
+                                                                <span className={`px-2 py-0.5 text-[9px] font-black uppercase rounded-full border ${f.status==='approved' ? 'bg-emerald-950/80 text-emerald-400 border-emerald-800/60':'bg-amber-950/80 text-amber-400 border-amber-800/60'}`}>
+                                                                    {f.status==='approved' ? 'Approved':'Pending'}
+                                                                </span>
+                                                            </td>
+                                                            <td className="p-3.5 text-center flex justify-center gap-2">
+                                                                <button onClick={() => openSys1ForSPV(f.id)} className="bg-amber-500 hover:bg-amber-600 text-slate-950 text-[10px] font-extrabold uppercase px-3 py-1.5 rounded-xl transition shadow-xs">
+                                                                    Buka & Review
+                                                                </button>
+                                                                <button onClick={(e) => deleteSys1Log(f.id, e)} className="bg-red-600/20 hover:bg-red-600 border border-red-500/30 text-red-400 hover:text-white text-[10px] font-bold uppercase px-3 py-1.5 rounded-xl transition">
+                                                                    Hapus
+                                                                </button>
+                                                            </td>
+                                                        </tr>
+                                                    ))
+                                                )}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            )}
+                        </main>
+
+                        <footer className="bg-slate-900/50 backdrop-blur-sm border-t border-slate-800 p-4 text-center text-[10px] uppercase font-bold text-slate-500 print-hidden tracking-widest relative z-10">
+                            PT Batutua Tembaga Raya — Supply Chain Management System
+                        </footer>
+                    </div>
+                );
+            }
+
+            if (systemMode === 'sys2') {
+                return (
+                    <div className="min-h-screen bg-gradient-to-br from-slate-800 via-slate-900 to-slate-950 text-slate-200 flex flex-col justify-between no-black-pdf relative overflow-hidden">
+                        
+                        {/* Background Glow Sub-Menu */}
+                        <div className="absolute top-0 right-1/4 w-[500px] h-[500px] bg-orange-600/10 blur-[120px] rounded-full pointer-events-none print-hidden"></div>
+
+                        <header className="bg-slate-900/80 backdrop-blur-md border-b border-slate-700/50 p-4 flex flex-col lg:flex-row gap-4 items-center justify-between print-hidden shadow-sm sticky top-0 z-50">
+                            <div className="flex items-center gap-4 w-full lg:w-auto">
+                                <button onClick={() => setSystemMode('core-dashboard')} className="bg-slate-800 hover:bg-slate-700 border border-slate-600 text-white font-bold py-2 px-4 rounded-xl text-xs transition duration-200 shrink-0 shadow-md flex items-center gap-1">
+                                    <span>⬅</span> <span className="hidden sm:inline">Portal</span>
+                                </button>
+                                <div className="truncate text-white">
+                                    <h1 className="font-black text-sm md:text-lg text-slate-100 uppercase tracking-tight flex items-center gap-1.5">
+                                        <span>WEEKLY INSPECTION</span>
+                                        <span className="bg-orange-600 text-white text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider shadow-xs">BTR</span>
+                                    </h1>
+                                    <p className="text-[10px] text-slate-400 uppercase tracking-wide mt-0.5 font-medium"></p>
+                                </div>
+                            </div>
+                            <nav className="flex gap-2 w-full lg:w-auto justify-end overflow-x-auto py-1 custom-scrollbar">
+                                <button onClick={() => setActiveTab('dashboard')} className={`px-4 py-2 rounded-xl text-xs font-bold transition duration-200 shrink-0 border ${activeTab==='dashboard' ? 'bg-orange-600 border-orange-500 text-white shadow-md':'bg-slate-800/50 border-slate-700 text-slate-300 hover:bg-slate-700'}`}>Dashboard</button>
+                                <button onClick={() => { resetSys2Context(); setActiveTab('form'); }} className={`px-4 py-2 rounded-xl text-xs font-bold transition duration-200 shrink-0 border ${activeTab==='form' ? 'bg-orange-600 border-orange-500 text-white shadow-md':'bg-slate-800/50 border-slate-700 text-slate-300 hover:bg-slate-700'}`}>📋 Input Checklist</button>
+                                <button onClick={() => handleVerifikasiClick('verifikasi')} className={`px-4 py-2 rounded-xl text-xs font-bold transition duration-200 shrink-0 border ${activeTab==='verifikasi' ? 'bg-orange-600 border-orange-500 text-white shadow-md':'bg-slate-800/50 border-slate-700 text-slate-300 hover:bg-slate-700'}`}>🛡️ Validasi SPV/HOD </button>
+                            </nav>
+                        </header>
+
+                        <main className="flex-1 p-4 md:p-8 max-w-5xl w-full mx-auto print-area no-black-pdf relative z-10">
+                            {activeTab === 'dashboard' && (
+                                <div className="space-y-6 py-2 animate-fade-in">
+                                    <div className="text-center mb-8">
+                                        <span className="bg-orange-500/10 border border-orange-500/30 text-orange-400 text-[10px] font-black uppercase tracking-widest px-4 py-1.5 rounded-full inline-block shadow-xs">SUPPLY CHAIN MANAGEMENT</span>
+                                        <h2 className="text-3xl md:text-4xl font-black text-slate-100 tracking-tight mt-3 uppercase">WEEKLY INSPECTION </h2>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-2xl mx-auto print-hidden">
+                                        <div onClick={() => { resetSys2Context(); setActiveTab('form'); }} className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 p-6 rounded-2xl cursor-pointer hover:border-orange-500 hover:shadow-[0_10px_25px_-5px_rgba(249,115,22,0.2)] transition-all group duration-300">
+                                            <div className="w-12 h-12 bg-slate-900/50 text-orange-500 rounded-xl flex items-center justify-center text-2xl font-bold mb-4 group-hover:bg-orange-500/20 group-hover:scale-110 transition-all">📋</div>
+                                            <h3 className="font-bold text-base text-slate-100">Form Checklist Mingguan</h3>
+                                            <p className="text-xs text-slate-400 mt-1 font-light leading-relaxed"></p>
+                                        </div>
+
+                                        <div onClick={() => handleVerifikasiClick('verifikasi')} className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 p-6 rounded-2xl cursor-pointer hover:border-orange-500 hover:shadow-[0_10px_25px_-5px_rgba(249,115,22,0.2)] transition-all group duration-300">
+                                            <div className="w-12 h-12 bg-slate-900/50 text-slate-300 rounded-xl flex items-center justify-center text-2xl font-bold mb-4 group-hover:bg-orange-500/20 group-hover:text-orange-400 group-hover:scale-110 transition-all">🛡️</div>
+                                            <h3 className="font-bold text-base text-slate-100">Validasi SPV/Admin</h3>
+                                            <p className="text-xs text-slate-400 mt-1 font-light leading-relaxed"></p>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {activeTab === 'form' && (
+                                <div className="space-y-4 animate-fade-in text-slate-900">
+                                    {!sys2ReadOnly && (
+                                        <div className="bg-white border border-slate-200 p-4 rounded-2xl shadow-xs flex flex-col sm:flex-row items-center gap-4 print-hidden">
+                                            <div className="flex items-center gap-3 w-full sm:w-auto">
+                                                <div className="w-10 h-10 bg-orange-50 rounded-xl flex items-center justify-center text-orange-600 text-lg font-bold">📍</div>
+                                                <div>
+                                                    <label className="text-[10px] font-black uppercase text-slate-500 block tracking-wider">Lokasi Pemantauan</label>
+                                                    <span className="text-xs font-bold text-slate-700 hidden sm:inline">Pilih Area :</span>
+                                                </div>
+                                            </div>
+                                            <select value={sys2Area} onChange={(e) => setSys2Area(e.target.value)} className="w-full sm:flex-1 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-xs font-bold outline-none focus:border-orange-500 cursor-pointer text-slate-900 shadow-xs">
+                                                {Object.keys(weeklyLibrary).map((area, index) => (
+                                                    <option key={index} value={area}>{index + 1}. {area.toUpperCase()}</option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                    )}
+
+                                    <div className="bg-white border border-slate-200 rounded-2xl p-4 md:p-8 shadow-xl print-area no-black-pdf overflow-hidden">
+                                        
+                                        <div className="border-2 border-slate-900 flex flex-col sm:grid sm:grid-cols-12 text-center items-stretch mb-6 text-slate-900 bg-white shadow-xs rounded-xl overflow-hidden">
+                                            <div className="sm:col-span-3 p-4 flex flex-row sm:flex-col items-center justify-center bg-white font-black text-xs border-b-2 sm:border-b-0 sm:border-r-2 border-slate-900 gap-2">
+                                                <img src={btrLogoBase64} className="w-16 sm:w-full sm:max-w-[80px] h-auto object-contain mix-blend-multiply" alt="Logo PT BTR" />
+                                            </div>
+                                            <div className="sm:col-span-6 p-4 bg-red-600 text-white font-black flex flex-col items-center justify-center border-b-2 sm:border-b-0 sm:border-r-2 border-slate-900">
+                                                <div className="text-[9px] bg-slate-950 text-white px-2 py-0.5 rounded-full font-mono font-bold tracking-widest mb-1 shadow-inner">SCM DEPT</div>
+                                                <div className="text-sm md:text-base uppercase tracking-wider font-extrabold border-b border-white/20 pb-0.5">WEEKLY FACILITY INSPECTION REPORT</div>
+                                                <p className="text-[8px] font-mono tracking-widest text-red-100 uppercase mt-1">SISTEM MONITORING PENUNJANG LOGISTIK WETAR</p>
+                                            </div>
+                                            <div className="sm:col-span-3 p-3 text-left flex flex-row sm:flex-col justify-center gap-2 sm:gap-1 font-mono text-[9px] font-bold bg-slate-50 text-slate-700">
+                                                <div>No Dok: <span className="text-black-600 font-extrabold block sm:inline">{weeklyDocNumbers[sys2Area] || 'BTR-SCM-001'}</span></div>
+                                                <div className="hidden sm:block w-full h-[1px] bg-slate-200"></div>
+                                                <div>Revisi: 1.0</div>
+                                                <div className="hidden sm:block w-full h-[1px] bg-slate-200"></div>
+                                                <div>Tipe: FRM-SCM</div>
+                                            </div>
+                                        </div>
+
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs font-medium mb-6 bg-slate-50 p-4 rounded-xl border border-slate-200 text-slate-900">
+                                            <div className="space-y-2">
+                                                <div className="flex border-b border-slate-200 pb-1.5 items-center"><span className="w-24 text-slate-500 font-bold uppercase shrink-0">DEPARTEMEN</span><span className="mr-1">:</span><span className="font-extrabold text-red-600">SUPPLY CHAIN MANAGEMENT</span></div>
+                                                <div className="flex border-b border-slate-200 pb-1.5 items-center">
+                                                    <span className="w-24 text-slate-500 font-bold uppercase shrink-0">TGL AUDIT</span><span className="mr-1">:</span>
+                                                    {sys2ReadOnly ? <span className="font-bold text-slate-800">{sys2Meta.tanggal}</span> : <input type="date" value={sys2Meta.tanggal} onChange={e=>setSys2Meta({...sys2Meta, tanggal: e.target.value})} className="flex-1 bg-transparent font-bold text-slate-900 outline-none w-full" />}
+                                                </div>
+                                            </div>
+                                            <div className="space-y-2">
+                                                <div className="flex border-b border-slate-200 pb-1.5 items-center"><span className="w-24 text-slate-500 font-bold uppercase shrink-0">AREA / LOKASI</span><span className="mr-1">:</span><span className="font-black text-slate-900 uppercase truncate">{sys2Area}</span></div>
+                                                <div className="flex border-b border-slate-200 pb-1.5 items-center">
+                                                    <span className="w-24 text-slate-500 font-bold uppercase shrink-0">WAKTU CEK</span><span className="mr-1">:</span>
+                                                    {sys2ReadOnly ? <span className="font-bold text-slate-800">{sys2Meta.jam} WITA</span> : <input type="time" value={sys2Meta.jam} onChange={e=>setSys2Meta({...sys2Meta, jam: e.target.value})} className="flex-1 bg-transparent font-bold text-slate-900 outline-none w-full" />}
+                                                </div>
+                                            </div>
+                                            <div className="sm:col-span-2 flex border-b border-slate-200 pb-1.5 items-center">
+                                                <span className="w-24 text-slate-500 font-bold uppercase shrink-0">INSPECTED BY</span><span className="mr-1">:</span>
+                                                {sys2ReadOnly ? <span className="font-black text-slate-900 bg-slate-200 px-2 py-0.5 rounded">{sys2Meta.inspectedBy}</span> : <input type="text" value={sys2Meta.inspectedBy} onChange={e=>setSys2Meta({...sys2Meta, inspectedBy: e.target.value})} placeholder="Ketik nama pemeriksa lapangan..." className="flex-1 bg-transparent font-semibold text-slate-800 placeholder-slate-400 outline-none w-full" />}
+                                            </div>
+                                        </div>
+
+                                        <div className="border border-slate-200 rounded-xl overflow-hidden shadow-xs mb-6">
+                                            <div className="overflow-x-auto custom-scrollbar">
+                                                <table className="w-full text-xs text-left border-collapse table-fixed min-w-[600px] bg-white">
+                                                    <thead className="bg-slate-900 text-white font-bold text-[10px] uppercase tracking-wider">
+                                                        <tr>
+                                                            <th className="w-[6%] text-center p-3 border border-slate-400">NO</th>
+                                                            <th className="w-[66%] p-3 border border-slate-400">PARAMETER INSPEKSI FASILITAS AREA & REKAMAN FOTO</th>
+                                                            <th className="w-[14%] text-center p-3 bg-emerald-800 text-white border border-slate-400">SESUAI</th>
+                                                            <th className="w-[14%] text-center p-3 bg-red-800 text-white border border-slate-400">TIDAK</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody className="divide-y divide-slate-200 text-slate-900">
+                                                        {(weeklyLibrary[sys2Area] || []).map((desc, idx) => {
+                                                            const checkVal = sys2Checks[idx]?.val || '';
+                                                            const checkImg = sys2Checks[idx]?.img || '';
+                                                            return (
+                                                                <tr key={idx} className={`hover:bg-slate-50/50 transition-colors ${checkVal=='ya'?'bg-emerald-50/30':''} ${checkVal=='tdk'?'bg-red-50/30':''}`}>
+                                                                    <td className="p-3 text-center font-bold text-red-600 border border-slate-300">{idx + 1}</td>
+                                                                    <td className="p-3 border border-slate-300 space-y-2">
+                                                                        <div className="font-semibold text-slate-800 leading-relaxed">{desc}</div>
+                                                                        <div className="block w-full">
+                                                                            {checkImg ? (
+                                                                                <div className="relative inline-block w-full max-w-[260px] sm:max-w-xs mt-1">
+                                                                                    <img src={checkImg} className="w-full h-auto max-h-[180px] rounded-lg border border-slate-200 shadow-sm object-contain bg-slate-50 p-0.5 mix-blend-multiply" alt="Evidence" />
+                                                                                    {!sys2ReadOnly && (
+                                                                                        <button type="button" onClick={() => setSys2Checks(prev => { const u = [...prev]; u[idx].img=''; return u; })} className="absolute -top-1.5 -right-1.5 bg-red-600 text-white p-1 rounded-full text-[9px] hover:bg-red-700 font-bold print-hidden shadow-sm shadow-black/40 w-5 h-5 flex items-center justify-center">✕</button>
+                                                                                    )}
+                                                                                </div>
+                                                                            ) : (
+                                                                                !sys2ReadOnly && (
+                                                                                    <label className="inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 rounded-lg text-[9px] font-bold cursor-pointer print-hidden transition-colors mt-1 shadow-2xs">
+                                                                                        <span>📷</span> <span>Lampirkan Kamera / File</span>
+                                                                                        <input type="file" accept="image/*" className="hidden" onChange={(e) => handleSys2Photo(idx, e)} />
+                                                                                    </label>
+                                                                                )
+                                                                            )}
+                                                                        </div>
+                                                                    </td>
+                                                                    <td className="p-3 text-center border border-slate-300">
+                                                                        <button type="button" disabled={sys2ReadOnly} onClick={() => handleSys2CheckVal(idx, 'ya')} className={`w-6 h-6 rounded-lg border-2 font-black text-xs mx-auto flex items-center justify-center transition-all ${checkVal==='ya'?'bg-emerald-600 border-emerald-600 text-white shadow-xs':'bg-white border-slate-200 hover:border-slate-300'}`}>
+                                                                            {checkVal === 'ya' && '✓'}
+                                                                        </button>
+                                                                    </td>
+                                                                    <td className="p-3 text-center border border-slate-300">
+                                                                        <button type="button" disabled={sys2ReadOnly} onClick={() => handleSys2CheckVal(idx, 'tdk')} className={`w-6 h-6 rounded-lg border-2 font-black text-xs mx-auto flex items-center justify-center transition-all ${checkVal==='tdk'?'bg-red-600 border-red-600 text-white shadow-xs':'bg-white border-slate-200 hover:border-slate-300'}`}>
+                                                                            {checkVal === 'tdk' && '✕'}
+                                                                        </button>
+                                                                    </td>
+                                                                </tr>
+                                                            );
+                                                        })}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+
+                                        <div className="mb-6 w-full no-black-pdf">
+                                            <div className="flex justify-between items-center mb-3">
+                                                <h3 className="font-extrabold text-red-600 text-xs uppercase tracking-wider font-mono flex items-center gap-1">⚠️ TEMUAN LAPANGAN & TINDAKAN KOREKTIF</h3>
+                                                {!sys2ReadOnly && (
+                                                    <button type="button" onClick={addSys2FindingRow} className="bg-slate-900 text-white px-3 py-1.5 rounded-xl text-[10px] font-extrabold print-hidden hover:bg-slate-800 shadow-sm transition-colors">➕ Baris Temuan</button>
+                                                )}
+                                            </div>
+                                            
+                                            <div className="overflow-x-auto custom-scrollbar">
+                                                <table className="w-full text-xs text-left border-collapse border border-slate-200 bg-white min-w-[550px] rounded-xl overflow-hidden shadow-2xs">
+                                                    <thead className="bg-slate-100 text-slate-700 font-bold text-[10px] uppercase tracking-wider">
+                                                        <tr>
+                                                            <th className="border border-slate-200 p-2.5 w-[6%] text-center">NO</th>
+                                                            <th className="border border-slate-200 p-2.5 w-[64%]">DESKRIPSI DEVIASI / REKOMENDASI TINDAKAN PERBAIKAN</th>
+                                                            <th className="border border-slate-200 p-2.5 w-[30%]">PIC & TARGET CLOSING</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody className="text-slate-900 align-top divide-y divide-slate-200">
+                                                        {sys2FindingsList.map((row, index) => (
+                                                            <tr key={row.id}>
+                                                                <td className="border border-slate-200 p-2.5 text-center font-bold text-slate-500 bg-slate-50/50">{index + 1}</td>
+                                                                
+                                                                <td className="border border-slate-200 p-2.5 space-y-2">
+                                                                    <div className="flex flex-col gap-2">
+                                                                        {sys2ReadOnly ? (
+                                                                            <div className="p-2 border border-slate-200 rounded-lg min-h-[45px] bg-slate-50 font-normal whitespace-pre-wrap text-[11px] text-slate-700">{row.temuan || "(Tidak ada temuan)"}</div>
+                                                                        ) : (
+                                                                            <textarea rows="2" value={row.temuan} onChange={e => updateSys2FindingRow(row.id, 'temuan', e.target.value)} className="w-full border border-slate-300 focus:border-slate-500 rounded-lg p-2 outline-none text-xs text-slate-800 bg-white transition-colors" placeholder="Uraian Deviasi/Temuan K3 Khusus..." />
+                                                                        )}
+                                                                        {sys2ReadOnly ? (
+                                                                            row.perbaikan && <div className="p-2 border border-blue-200 rounded-lg min-h-[45px] bg-blue-50/30 whitespace-pre-wrap text-[11px] font-medium text-slate-800">{row.perbaikan}</div>
+                                                                        ) : (
+                                                                            <textarea rows="2" value={row.perbaikan} onChange={e => updateSys2FindingRow(row.id, 'perbaikan', e.target.value)} className="w-full border border-blue-300 focus:border-blue-500 rounded-lg p-2 outline-none text-xs text-slate-800 bg-white transition-colors" placeholder="Rencana Aksi / Tindakan Perbaikan Masalah..." />
+                                                                        )}
+                                                                    </div>
+                                                                </td>
+
+                                                                <td className="border border-slate-200 p-2.5 bg-slate-50/30">
+                                                                    <div className="flex flex-col gap-2">
+                                                                        {sys2ReadOnly ? (
+                                                                            <div className="p-1.5 border border-slate-200 rounded-lg bg-white font-bold text-slate-800 text-[11px]">{row.pic || "—"}</div>
+                                                                        ) : (
+                                                                            <input type="text" value={row.pic} onChange={e => updateSys2FindingRow(row.id, 'pic', e.target.value)} placeholder="PIC Penanggung Jawab" className="w-full border border-slate-300 rounded-lg p-1.5 text-xs bg-white text-slate-800 outline-none focus:border-slate-500" />
+                                                                        )}
+                                                                        {sys2ReadOnly ? (
+                                                                            <div className="p-1.5 border border-slate-200 rounded-lg bg-white text-slate-600 font-mono text-[11px]">{row.target || "—"}</div>
+                                                                        ) : (
+                                                                            <input type="date" value={row.target} onChange={e => updateSys2FindingRow(row.id, 'target', e.target.value)} className="w-full border border-slate-300 rounded-lg p-1.5 text-xs bg-white text-slate-800 outline-none focus:border-slate-500" />
+                                                                        )}
+                                                                        {!sys2ReadOnly && sys2FindingsList.length > 1 && (
+                                                                            <button type="button" onClick={() => removeSys2FindingRow(row.id)} className="w-full text-center text-red-600 font-bold p-1 bg-red-50 hover:bg-red-100 rounded-lg border border-red-200 text-[10px] transition-colors mt-1 print-hidden">Eliminasi Baris</button>
+                                                                        )}
+                                                                    </div>
+                                                                </td>
+                                                            </tr>
+                                                        ))}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+
+                                        {/* BAGIAN TANDA TANGAN */}
+                                        <div className="border border-slate-200 rounded-xl grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-slate-200 text-center bg-slate-50/50 no-black-pdf gap-y-4 sm:gap-y-0 p-1.5">
+                                            
+                                            {/* TANDA TANGAN INSPEKTOR */}
+                                            <div className="p-3 flex flex-col justify-between items-center min-h-[160px] no-black-pdf">
+                                                <span className="text-[10px] font-extrabold text-slate-500 uppercase tracking-widest">DIINSPEKSI OLEH</span>
+                                                <SignaturePad 
+                                                    savedImage={sys2Sigs.sigInspector} 
+                                                    onSave={(img) => setSys2Sigs({...sys2Sigs, sigInspector: img})} 
+                                                    readOnly={sys2ReadOnly} 
+                                                    placeholder="Inspektor SCM" 
+                                                />
+                                                <div className="w-full">
+                                                    {sys2ReadOnly ? (
+                                                        <div className="font-bold text-xs text-slate-800">{sys2Sigs.nameInspector}</div>
+                                                    ) : (
+                                                        <input type="text" value={sys2Sigs.nameInspector} onChange={e=>setSys2Sigs({...sys2Sigs, nameInspector: e.target.value})} placeholder="Ketik Nama Inspektor" className="w-full text-center font-bold text-slate-900 text-xs border-b border-slate-300 bg-white p-1 rounded-md outline-none focus:border-slate-500" />
+                                                    )}
+                                                    <div className="text-[9px] text-slate-500 font-medium uppercase mt-0.5">SCM Inspector</div>
+                                                </div>
+                                            </div>
+
+                                            {/* TANDA TANGAN SPV */}
+                                            <div className="p-3 flex flex-col justify-between items-center min-h-[160px] no-black-pdf">
+                                                <span className="text-[10px] font-extrabold text-slate-500 uppercase tracking-widest">MENGETAHUI</span>
+                                                {sys2ActiveId ? (
+                                                    <SignaturePad 
+                                                        savedImage={sys2Sigs.sigSpv} 
+                                                        onSave={(img) => setSys2Sigs({...sys2Sigs, sigSpv: img})} 
+                                                        readOnly={['Pending HOD', 'Approved'].includes(sys2Records.find(x => x.id === sys2ActiveId)?.status)} 
+                                                        placeholder="Supervisor SCM"
+                                                    />
+                                                ) : (
+                                                    <div className="text-[10px] font-semibold text-amber-600 bg-amber-50 px-3 py-2 border border-amber-200 rounded-xl my-auto italic">🔒 Autolock Pool</div>
+                                                )}
+                                                <div className="w-full px-1">
+                                                    {sys2ActiveId ? (
+                                                        ['Pending HOD', 'Approved'].includes(sys2Records.find(x => x.id === sys2ActiveId)?.status) ? (
+                                                            <div className="font-bold text-xs text-slate-800">{sys2Sigs.nameSpv || '---'}</div>
+                                                        ) : (
+                                                            <input type="text" value={sys2Sigs.nameSpv} onChange={e=>setSys2Sigs({...sys2Sigs, nameSpv: e.target.value})} placeholder="Ketik Nama SPV" className="w-full text-center font-bold text-slate-900 text-xs border-b border-slate-300 bg-white p-1 rounded-md outline-none focus:border-slate-500" />
+                                                        )
+                                                    ) : (
+                                                        <div className="font-bold text-xs text-slate-400">---</div>
+                                                    )}
+                                                    <div className="text-[9px] text-slate-500 font-medium uppercase mt-0.5">SCM Supervisor</div>
+                                                </div>
+                                            </div>
+
+                                            {/* TANDA TANGAN HOD */}
+                                            <div className="p-3 flex flex-col justify-between items-center min-h-[160px] no-black-pdf">
+                                                <span className="text-[10px] font-extrabold text-slate-500 uppercase tracking-widest">DISETUJUI</span>
+                                                {sys2ActiveId && sys2Records.find(x => x.id === sys2ActiveId)?.status !== 'Pending' ? (
+                                                    <SignaturePad 
+                                                        savedImage={sys2Sigs.sigHead} 
+                                                        onSave={(img) => setSys2Sigs({...sys2Sigs, sigHead: img})} 
+                                                        readOnly={sys2Records.find(x => x.id === sys2ActiveId)?.status === 'Approved'} 
+                                                        placeholder="Department Head"
+                                                    />
+                                                ) : (
+                                                    <div className="text-[10px] font-semibold text-amber-600 bg-amber-50 px-3 py-2 border border-amber-200 rounded-xl my-auto italic">🔒 Menunggu SPV</div>
+                                                )}
+                                                <div className="w-full px-1">
+                                                    {sys2ActiveId && sys2Records.find(x => x.id === sys2ActiveId)?.status !== 'Pending' ? (
+                                                        sys2Records.find(x => x.id === sys2ActiveId)?.status === 'Approved' ? (
+                                                            <div className="font-bold text-xs text-slate-800">{sys2Sigs.nameHead || '---'}</div>
+                                                        ) : (
+                                                            <input type="text" value={sys2Sigs.nameHead} onChange={e=>setSys2Sigs({...sys2Sigs, nameHead: e.target.value})} placeholder="Ketik Nama Head" className="w-full text-center font-bold text-slate-900 text-xs border-b border-slate-300 bg-white p-1 rounded-md outline-none focus:border-slate-500" />
+                                                        )
+                                                    ) : (
+                                                        <div className="font-bold text-xs text-slate-400">---</div>
+                                                    )}
+                                                    <div className="text-[9px] text-slate-500 font-medium uppercase mt-0.5">SCM Department Head</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex flex-wrap gap-3 justify-center print-hidden mb-8 px-2 relative z-10">
+                                        {sys2ActiveId ? (
+                                            <>
+                                                <button onClick={handleSys2Action} className="px-6 py-3 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white rounded-xl text-xs font-bold uppercase tracking-wider shadow-md transition-all w-full sm:w-auto">
+                                                    {sys2Records.find(x => x.id === sys2ActiveId)?.status === 'Approved' ? '🖨️ Cetak PDF Dokumen' :
+                                                     sys2Records.find(x => x.id === sys2ActiveId)?.status === 'Pending HOD' ? 'APPROVE HOD & CETAK PDF' :
+                                                     'VALIDASI SPV (NEXT: HOD)'}
+                                                </button>
+                                                <button onClick={() => { setSys2ActiveId(null); setSys2ReadOnly(false); resetSys2Context(); setActiveTab('verifikasi'); }} className="px-6 py-3 bg-slate-800 hover:bg-slate-700 border border-slate-600 text-white rounded-xl text-xs font-bold uppercase tracking-wider shadow-xs transition-all w-full sm:w-auto">Kembali</button>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <button disabled={isSaving} onClick={saveSys2ToPool} className={`bg-orange-600 text-white text-xs font-black uppercase tracking-wider px-6 py-3.5 rounded-xl shadow-md transition-all w-full sm:w-auto ${isSaving ? 'opacity-50 cursor-not-allowed' : 'hover:bg-orange-700 active:scale-95'}`}>
+                                                    {isSaving ? '⏳ Mengirim Arsip...' : 'SAVE'}
+                                                </button>
+                                                <button onClick={() => { if(confirm("Kosongkan form?")) resetSys2Context(); }} className="px-6 py-3.5 bg-slate-800 hover:bg-slate-700 border border-slate-600 text-slate-200 rounded-xl text-xs font-bold uppercase tracking-wider transition-all w-full sm:w-auto">Reset Form</button>
+                                            </>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
+
+                            {activeTab === 'verifikasi' && (
+                                <div className="space-y-4 animate-fade-in relative z-10">
+                                    <div className="bg-white border border-slate-200 rounded-2xl p-4 md:p-6 shadow-sm">
+                                        <div className="mb-4 border-b border-slate-100 pb-2">
+                                            <h3 className="text-slate-900 font-extrabold text-sm md:text-base tracking-tight flex items-center gap-1.5"><span>🛡️</span> Vault Cloud Vault Weekly Inspeksi</h3>
+                                            <p className="text-[11px] text-slate-500 font-light">Penyimpanan sistem arsip pusat logistik PT BTR.</p>
+                                        </div>
+
+                                        <div className="overflow-x-auto custom-scrollbar">
+                                            <table className="w-full text-xs text-left border-collapse min-w-[700px]">
+                                                <thead>
+                                                    <tr className="bg-slate-50 text-slate-500 font-extrabold uppercase text-[10px] tracking-wider border-b border-slate-200">
+                                                        <th className="p-3.5">Tanggal / Jam</th>
+                                                        <th className="p-3.5">Kode Registrasi Dokumen</th>
+                                                        <th className="p-3.5">Fasilitas / Lokasi</th>
+                                                        <th className="p-3.5">Inspektor Penanggung Jawab</th>
+                                                        <th className="p-3.5">Status</th>
+                                                        <th className="p-3.5 text-center">Aksi Dokumen</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody className="divide-y divide-slate-100 font-medium text-slate-700">
+                                                    {sys2Records.length === 0 ? (
+                                                        <tr><td colSpan="6" className="text-center p-12 text-slate-500 font-medium italic">Tidak ada berkas laporan masuk mingguan di database online.</td></tr>
+                                                    ) : (
+                                                        sys2Records.map(rec => (
+                                                            <tr key={rec.id} className="hover:bg-slate-50/80 cursor-pointer transition-colors" onClick={() => openSys2Record(rec)}>
+                                                                <td className="p-3.5 font-mono text-slate-500 text-[11px]">{rec.tanggal} • {rec.jam}</td>
+                                                                <td className="p-3.5 font-extrabold text-red-600 font-mono text-[11px]">{rec.docNo}</td>
+                                                                <td className="p-3.5 font-bold text-slate-900 uppercase truncate max-w-[150px]">{rec.area}</td>
+                                                                <td className="p-3.5 font-semibold text-slate-600 truncate max-w-[120px]">{rec.inspectedBy}</td>
+                                                                <td className="p-3.5">
+                                                                    <span className={`px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase border ${
+                                                                        rec.status === 'Approved' ? 'bg-emerald-100 text-emerald-700 border-emerald-200' : 
+                                                                        rec.status === 'Pending HOD' ? 'bg-blue-100 text-blue-700 border-blue-200' : 
+                                                                        'bg-amber-100 text-amber-700 border-amber-200'
+                                                                    }`}>
+                                                                        {rec.status || 'Pending'}
+                                                                    </span>
+                                                                </td>
+                                                                <td className="p-3.5 text-center flex justify-center gap-2" onClick={e=>e.stopPropagation()}>
+                                                                    <button onClick={() => openSys2Record(rec)} className="bg-red-600 hover:bg-red-700 text-white text-[10px] font-bold uppercase px-3 py-1.5 rounded-xl transition-all shadow-2xs active:scale-95">Buka</button>
+                                                                    <button onClick={() => deleteSys2Record(rec.id)} className="bg-slate-100 text-slate-600 text-[10px] font-medium uppercase px-3 py-1.5 rounded-xl transition-colors hover:bg-red-600 hover:text-white border border-slate-200">Hapus</button>
+                                                                </td>
+                                                            </tr>
+                                                        ))
+                                                    )}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                        </main>
+
+                        <footer className="bg-slate-900/50 backdrop-blur-sm border-t border-slate-800 p-4 text-center text-[10px] uppercase font-bold text-slate-500 print-hidden tracking-widest relative z-10">
+                            PT Batutua Tembaga Raya — SCM Facility Compliance Portal
+                        </footer>
+                    </div>
+                );
+            }
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
