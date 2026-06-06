@@ -1163,10 +1163,10 @@
                                             <div className="sm:col-span-3 p-4 flex flex-row sm:flex-col items-center justify-center bg-white font-black text-xs border-b-2 sm:border-b-0 sm:border-r-2 border-slate-900 gap-2">
                                                 <img src={btrLogoBase64} className="w-16 sm:w-full sm:max-w-[80px] h-auto object-contain mix-blend-multiply" alt="Logo PT BTR" />
                                             </div>
-                                            <div className="sm:col-span-6 p-4 bg-red-600 text-white font-black flex flex-col items-center justify-center border-b-2 sm:border-b-0 sm:border-r-2 border-slate-900">
+                                            <div className="sm:col-span-6 p-4 bg-red-800 text-white font-black flex flex-col items-center justify-center border-b-2 sm:border-b-0 sm:border-r-2 border-slate-900">
                                                 <div className="text-[9px] bg-slate-950 text-white px-2 py-0.5 rounded-full font-mono font-bold tracking-widest mb-1 shadow-inner">SCM DEPT</div>
                                                 <div className="text-sm md:text-base uppercase tracking-wider font-extrabold border-b border-white/20 pb-0.5">WEEKLY FACILITY INSPECTION REPORT</div>
-                                                <p className="text-[8px] font-mono tracking-widest text-red-100 uppercase mt-1">SISTEM MONITORING PENUNJANG LOGISTIK WETAR</p>
+                                                <p className="text-[8px] font-mono tracking-widest text-red-100 uppercase mt-1"></p>
                                             </div>
                                             <div className="sm:col-span-3 p-3 text-left flex flex-row sm:flex-col justify-center gap-2 sm:gap-1 font-mono text-[9px] font-bold bg-slate-50 text-slate-700">
                                                 <div>No Dok: <span className="text-black-600 font-extrabold block sm:inline">{weeklyDocNumbers[sys2Area] || 'BTR-SCM-001'}</span></div>
@@ -1179,7 +1179,7 @@
 
                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs font-medium mb-6 bg-slate-50 p-4 rounded-xl border border-slate-200 text-slate-900">
                                             <div className="space-y-2">
-                                                <div className="flex border-b border-slate-200 pb-1.5 items-center"><span className="w-24 text-slate-500 font-bold uppercase shrink-0">DEPARTEMEN</span><span className="mr-1">:</span><span className="font-extrabold text-red-600">SUPPLY CHAIN MANAGEMENT</span></div>
+                                                <div className="flex border-b border-slate-200 pb-1.5 items-center"><span className="w-24 text-slate-500 font-bold uppercase shrink-0">DEPARTEMEN</span><span className="mr-1">:</span><span className="font-extrabold text-black-600">SUPPLY CHAIN MANAGEMENT</span></div>
                                                 <div className="flex border-b border-slate-200 pb-1.5 items-center">
                                                     <span className="w-24 text-slate-500 font-bold uppercase shrink-0">TGL AUDIT</span><span className="mr-1">:</span>
                                                     {sys2ReadOnly ? <span className="font-bold text-slate-800">{sys2Meta.tanggal}</span> : <input type="date" value={sys2Meta.tanggal} onChange={e=>setSys2Meta({...sys2Meta, tanggal: e.target.value})} className="flex-1 bg-transparent font-bold text-slate-900 outline-none w-full" />}
