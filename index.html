@@ -102,14 +102,14 @@
                ]
              },
             "lv": { 
-	     name: "LIGHT VEHICLE (LV)",
-	     items: [
-		   { section: "I. PEMERIKSAAN UMUM", tasks: ["Roda dan baut roda kencang", "Sistem kemudi dalam keadaan baik", "Sabuk pengaman dalam keadaan baik", "Kaca spion dalam keadaan baik", "Suspensi dalam keadaan baik", "Bendera tambang ketinggian cukup dan dapat terlihat", "Pemadam api dalam keadaan baik", "Kotak P3K tersedia", "Tidak ada kerusakan panel body", "Kebersihan dalam kabin baik", "Ban serep dan kunci roda tersedia", "Segitiga reflektif tersedia"] }, { section: "II. EMERGENCY", tasks: ["APAR", "Kotak P3K", "Tool Kit & Jack"] },
-    		   { section: "II. PEMERIKASAAN SEBELUM MESIN HIDUP", tasks: ["Level air pendingin radiator cukup", "Level oli mesin cukup", "Level oli power steering cukup", "Level oli rem cukup", "Level bahan bakar cukup", "Visual cek kondisi belt kipas baik", "Level air pembersih kaca cukup", "Terminal battery bersih dan kondisi baik"] },
-		   { section: "III. PEMERIKASAAN SETELAH MESIN HIDUP", tasks: ["Rem service dan parkir baik", "Panel instrument kondisi baik", "Tanda belok berfungsi baik", "Lampu jauh/dekat berfungsi baik", "Lampu stop berfungsi baik", "Lampu belakang berfungsi baik", "Lampu Hazard berfungsi baik", "Alarm mundur berfungsi baik", "Klackson berfungsi baik", "Pembersih kaca depan berfungsi baik", "Radio komunikasi berfungsi baik"] },
-		]
-		},  
-
+             name: "LIGHT VEHICLE (LV)",
+             items: [
+               { section: "I. PEMERIKSAAN UMUM", tasks: ["Roda dan baut roda kencang", "Sistem kemudi dalam keadaan baik", "Sabuk pengaman dalam keadaan baik", "Kaca spion dalam keadaan baik", "Suspensi dalam keadaan baik", "Bendera tambang ketinggian cukup dan dapat terlihat", "Pemadam api dalam keadaan baik", "Kotak P3K tersedia", "Tidak ada kerusakan panel body", "Kebersihan dalam kabin baik", "Ban serep dan kunci roda tersedia", "Segitiga reflektif tersedia"] }, 
+               { section: "II. EMERGENCY", tasks: ["APAR", "Kotak P3K", "Tool Kit & Jack"] },
+               { section: "II. PEMERIKASAAN SEBELUM MESIN HIDUP", tasks: ["Level air pendingin radiator cukup", "Level oli mesin cukup", "Level oli power steering cukup", "Level oli rem cukup", "Level bahan bakar cukup", "Visual cek kondisi belt kipas baik", "Level air pembersih kaca cukup", "Terminal battery bersih dan kondisi baik"] },
+               { section: "III. PEMERIKASAAN SETELAH MESIN HIDUP", tasks: ["Rem service dan parkir baik", "Panel instrument kondisi baik", "Tanda belok berfungsi baik", "Lampu jauh/dekat berfungsi baik", "Lampu stop berfungsi baik", "Lampu belakang berfungsi baik", "Lampu Hazard berfungsi baik", "Alarm mundur berfungsi baik", "Klackson berfungsi baik", "Pembersih kaca depan berfungsi baik", "Radio komunikasi berfungsi baik"] }
+            ]
+        }  
   };
 
         const btrUnits = [
@@ -268,7 +268,7 @@
             const handleVerifikasiClick = (targetTab) => {
                 const passwordInput = prompt("🔒 Masukkan Password Otoritas (Supervisor/HOD) untuk mengakses halaman ini:");
                 // Ganti "admin123" dengan password yang Anda inginkan
-                if (passwordInput === "admin123") {
+                if (passwordInput === "scm2026") {
                     setActiveTab(targetTab);
                 } else if (passwordInput !== null) {
                     alert("❌ AKSES DITOLAK: Password Salah!");
@@ -359,7 +359,7 @@
                 })
                 .then(() => {
                     setIsSaving(false); 
-                    alert("✅ Form Terkirim ke Cloud Server Antrean SPV!");
+                    alert("✅ Terima Kasih Kalwedo");
                     setActiveTab('dashboard');
                     resetSys1Form();
                     fetchCloudData();
@@ -400,7 +400,7 @@
                     body: JSON.stringify(updatedRecord)
                 })
                 .then(() => {
-                    alert("✅ Validasi Supervisor Berhasil Disimpan ke Database!");
+                    alert("✅ Terima kasih");
                     setActiveTab('antrean');
                     setSys1ActiveRecordId(null);
                     resetSys1Form();
@@ -460,7 +460,7 @@
                 .then(response => response.text()) 
                 .then(text => {
                     if (text.includes("Success")) {
-                        alert("✅ BERHASIL: Data rekap Hour Meter tersimpan di Google Sheets.");
+                        alert("✅ Terima kasih");
                         setHmData({}); 
                         
                         let elements = e.target.querySelectorAll('input');
@@ -566,7 +566,7 @@
                 })
                 .then(() => {
                     setIsSaving(false); 
-                    alert("🎯 Berkas checklist mingguan berhasil disimpan ke Cloud Database Vault!");
+                    alert("🎯 Terima Kasih");
                     resetSys2Context();
                     fetchCloudData();
                     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -582,7 +582,7 @@
                     fetch(`${FIREBASE_URL}/sys2_logs/${id}.json`, { method: 'DELETE' })
                     .then(res => {
                         if(res.ok){
-                            alert("✅ Data berhasil dihapus dari cloud.");
+                            alert("✅ Data dihapus");
                             fetchCloudData();
                         } else {
                             alert("❌ Gagal menghapus data di server cloud.");
@@ -979,7 +979,7 @@
                 );
             })}
         </React.Fragment>
-                                                        ))}
+                                                    ))}
                                                     </tbody>
                                                 </table>
                                             </div>
@@ -1006,7 +1006,7 @@
                                                         placeholder="Tanda Tangan SPV"
                                                     />
                                                 ) : (
-                                                    <div className="text-xs font-semibold text-amber-600 bg-amber-50 p-3 border border-amber-200 rounded-xl max-w-[180px] my-auto italic flex items-center gap-1">🔒 Terkunci Otomatis</div>
+                                                    <div className="text-xs font-semibold text-amber-600 bg-amber-50 p-3 border border-amber-200 rounded-xl max-w-[180px] my-auto italic flex items-center gap-1">🔒</div>
                                                 )}
                                                 <span className="text-xs font-bold text-slate-800 border-t border-slate-200 pt-2 w-full max-w-[180px]">Supervisor SCM</span>
                                             </div>
@@ -1033,7 +1033,7 @@
                             {activeTab === 'antrean' && (
                                 <div className="bg-slate-900/90 backdrop-blur-md text-white p-4 md:p-6 rounded-2xl shadow-2xl border border-slate-700 animate-fade-in relative z-10">
                                     <h3 className="text-red-400 font-extrabold text-xs md:text-sm uppercase tracking-wider border-b border-slate-700/80 pb-3 mb-4 flex items-center gap-2">
-                                        <span>📂</span> ANTREAN CLOUD VALIDASI LOG P2H HARIAN SCM
+                                        <span>📂</span> LIST P2H
                                     </h3>
                                     <div className="overflow-x-auto custom-scrollbar">
                                         <table className="w-full text-xs text-left border-collapse min-w-[700px]">
@@ -1044,7 +1044,7 @@
                                                     <th className="p-3.5">No. Unit</th>
                                                     <th className="p-3.5">Nama Operator</th>
                                                     <th className="p-3.5">Status Dokumen</th>
-                                                    <th className="p-3.5 text-center">Operasi Dokumen</th>
+                                                    <th className="p-3.5 text-center">Dokumen</th>
                                                 </tr>
                                             </thead>
                                             <tbody className="divide-y divide-slate-800 text-slate-300">
@@ -1165,7 +1165,7 @@
                                             </div>
                                             <div className="sm:col-span-6 p-4 bg-red-800 text-white font-black flex flex-col items-center justify-center border-b-2 sm:border-b-0 sm:border-r-2 border-slate-900">
                                                 <div className="text-[9px] bg-slate-950 text-white px-2 py-0.5 rounded-full font-mono font-bold tracking-widest mb-1 shadow-inner">SCM DEPT</div>
-                                                <div className="text-sm md:text-base uppercase tracking-wider font-extrabold border-b border-white/20 pb-0.5">WEEKLY FACILITY INSPECTION REPORT</div>
+                                                <div className="text-sm md:text-base uppercase tracking-wider font-extrabold border-b border-white/20 pb-0.5">WEEKLY INSPECTION REPORT</div>
                                                 <p className="text-[8px] font-mono tracking-widest text-red-100 uppercase mt-1"></p>
                                             </div>
                                             <div className="sm:col-span-3 p-3 text-left flex flex-row sm:flex-col justify-center gap-2 sm:gap-1 font-mono text-[9px] font-bold bg-slate-50 text-slate-700">
@@ -1179,7 +1179,7 @@
 
                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs font-medium mb-6 bg-slate-50 p-4 rounded-xl border border-slate-200 text-slate-900">
                                             <div className="space-y-2">
-                                                <div className="flex border-b border-slate-200 pb-1.5 items-center"><span className="w-24 text-slate-500 font-bold uppercase shrink-0">DEPARTEMEN</span><span className="mr-1">:</span><span className="font-extrabold text-black-600">SUPPLY CHAIN MANAGEMENT</span></div>
+                                                <div className="flex border-b border-slate-200 pb-1.5 items-center"><span className="w-24 text-slate-500 font-bold uppercase shrink-0">DEPARTEMEN</span><span className="mr-1">:</span><span className="font-extrabold text-BLACK-600">SUPPLY CHAIN MANAGEMENT</span></div>
                                                 <div className="flex border-b border-slate-200 pb-1.5 items-center">
                                                     <span className="w-24 text-slate-500 font-bold uppercase shrink-0">TGL AUDIT</span><span className="mr-1">:</span>
                                                     {sys2ReadOnly ? <span className="font-bold text-slate-800">{sys2Meta.tanggal}</span> : <input type="date" value={sys2Meta.tanggal} onChange={e=>setSys2Meta({...sys2Meta, tanggal: e.target.value})} className="flex-1 bg-transparent font-bold text-slate-900 outline-none w-full" />}
@@ -1348,7 +1348,7 @@
                                                         placeholder="Supervisor SCM"
                                                     />
                                                 ) : (
-                                                    <div className="text-[10px] font-semibold text-amber-600 bg-amber-50 px-3 py-2 border border-amber-200 rounded-xl my-auto italic">🔒 Autolock Pool</div>
+                                                    <div className="text-[10px] font-semibold text-amber-600 bg-amber-50 px-3 py-2 border border-amber-200 rounded-xl my-auto italic">🔒 </div>
                                                 )}
                                                 <div className="w-full px-1">
                                                     {sys2ActiveId ? (
@@ -1375,7 +1375,7 @@
                                                         placeholder="Department Head"
                                                     />
                                                 ) : (
-                                                    <div className="text-[10px] font-semibold text-amber-600 bg-amber-50 px-3 py-2 border border-amber-200 rounded-xl my-auto italic">🔒 Menunggu SPV</div>
+                                                    <div className="text-[10px] font-semibold text-amber-600 bg-amber-50 px-3 py-2 border border-amber-200 rounded-xl my-auto italic">🔒 </div>
                                                 )}
                                                 <div className="w-full px-1">
                                                     {sys2ActiveId && sys2Records.find(x => x.id === sys2ActiveId)?.status !== 'Pending' ? (
