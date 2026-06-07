@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portal Sistem Terpadu Inspeksi & Rekap SCM</title>
+    <title>Sistem  Inspeksi & P2H UNIT SCM</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
@@ -266,7 +266,7 @@
 
             // --- TAMBAHKAN FUNGSI INI ---
             const handleVerifikasiClick = (targetTab) => {
-                const passwordInput = prompt("🔒 Masukkan Password Otoritas (Supervisor/HOD) untuk mengakses halaman ini:");
+                const passwordInput = prompt("🔒 ");
                 // Ganti "admin123" dengan password yang Anda inginkan
                 if (passwordInput === "scm2026") {
                     setActiveTab(targetTab);
@@ -327,11 +327,11 @@
 
             const submitSys1ToLog = () => {
                 if (!sys1Meta.tanggal || !sys1Meta.operator || !sys1Meta.unitNum) {
-                    alert("⚠️ Kolom No. Unit dan Nama Operator wajib diisi sebelum dikirim!");
+                    alert("⚠️ Kolom No. Unit dan Nama Operator wajib diisi ");
                     return;
                 }
                 if (!sys1TtdOp) {
-                    alert("⚠️ Operator wajib menandatangani form terlebih dahulu!");
+                    alert("⚠️ Operator wajib menandatangani form ");
                     return;
                 }
                 
@@ -388,7 +388,7 @@
 
             const saveSys1SpvApproval = () => {
                 if (!sys1TtdSpv) {
-                    alert("⚠️ Supervisor wajib menandatangani berkas sebelum persetujuan!");
+                    alert("⚠️ Supervisor wajib menandatangani form");
                     return;
                 }
                 
@@ -638,7 +638,7 @@
                 if (targetRecord.status === 'Pending') {
                     // ACTION 1: SPV memvalidasi berkas -> Status menjadi 'Pending HOD'
                     if (!sys2Sigs.sigSpv || !sys2Sigs.nameSpv.trim()) {
-                        alert("⚠️ Supervisor SCM wajib mengisi nama dan menandatangani berkas sebelum persetujuan!");
+                        alert("⚠️ Supervisor SCM wajib mengisi nama dan menandatangani form");
                         return;
                     }
                     const updatedRecord = { 
@@ -662,7 +662,7 @@
                 } else if (targetRecord.status === 'Pending HOD') {
                     // ACTION 2: HOD memvalidasi berkas -> Status menjadi 'Approved' lalu Dokumen Dicetak
                     if (!sys2Sigs.sigHead || !sys2Sigs.nameHead.trim()) {
-                        alert("⚠️ SCM Department Head wajib mengisi nama dan menandatangani berkas sebelum persetujuan akhir!");
+                        alert("⚠️ SCM Department Head wajib mengisi nama dan menandatangani form");
                         return;
                     }
                     const updatedRecord = { 
@@ -947,7 +947,7 @@
                                                 <table className="w-full text-xs text-left border-collapse bg-white min-w-[600px]">
                                                     <thead className="bg-slate-900 text-white text-[10px] uppercase font-bold tracking-wider">
                                                         <tr>
-                                                            <th className="p-3.5 w-[40%] border border-slate-400">MATRIKS FASILITAS & ELEMEN KOMPONEN UNIT</th>
+                                                            <th className="p-3.5 w-[40%] border border-slate-400">ITEM FASILITAS & ELEMEN KOMPONEN UNIT</th>
                                                             <th className="p-3.5 text-center w-[12%] bg-emerald-800 border border-slate-400">BAIK</th>
                                                             <th className="p-3.5 text-center w-[12%] bg-red-800 border border-slate-400">RUSAK</th>
                                                             <th className="p-3.5 w-[36%] border border-slate-400">KETERANGAN OPERATOR</th>
@@ -987,7 +987,7 @@
 
                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 border-2 border-slate-100 rounded-xl p-4 md:p-6 bg-slate-50/50 text-center no-black-pdf">
                                             <div className="flex flex-col items-center justify-between gap-3 min-h-[150px]">
-                                                <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Personil Pemeriksa (Operator)</span>
+                                                <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Pemeriksa (Operator)</span>
                                                 <SignaturePad 
                                                     savedImage={sys1TtdOp} 
                                                     onSave={(img) => setSys1TtdOp(img)} 
@@ -997,7 +997,7 @@
                                                 <span className="text-xs font-bold text-slate-800 border-t border-slate-200 pt-2 w-full max-w-[180px] truncate">{sys1Meta.operator || '---'}</span>
                                             </div>
                                             <div className="flex flex-col items-center justify-between gap-3 min-h-[150px] pt-4 sm:pt-0 border-t sm:border-t-0 sm:border-l border-slate-200">
-                                                <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Persetujuan Otoritas (Supervisor)</span>
+                                                <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Mengetahui(Supervisor)</span>
                                                 {sys1ActiveRecordId ? (
                                                     <SignaturePad 
                                                         savedImage={sys1TtdSpv} 
@@ -1145,7 +1145,7 @@
                                             <div className="flex items-center gap-3 w-full sm:w-auto">
                                                 <div className="w-10 h-10 bg-orange-50 rounded-xl flex items-center justify-center text-orange-600 text-lg font-bold">📍</div>
                                                 <div>
-                                                    <label className="text-[10px] font-black uppercase text-slate-500 block tracking-wider">Lokasi Pemantauan</label>
+                                                    <label className="text-[10px] font-black uppercase text-slate-500 block tracking-wider"></label>
                                                     <span className="text-xs font-bold text-slate-700 hidden sm:inline">Pilih Area :</span>
                                                 </div>
                                             </div>
@@ -1204,7 +1204,7 @@
                                                     <thead className="bg-slate-900 text-white font-bold text-[10px] uppercase tracking-wider">
                                                         <tr>
                                                             <th className="w-[6%] text-center p-3 border border-slate-400">NO</th>
-                                                            <th className="w-[66%] p-3 border border-slate-400">PARAMETER INSPEKSI FASILITAS AREA & REKAMAN FOTO</th>
+                                                            <th className="w-[66%] p-3 border border-slate-400">ITEM INSPEKSI </th>
                                                             <th className="w-[14%] text-center p-3 bg-emerald-800 text-white border border-slate-400">SESUAI</th>
                                                             <th className="w-[14%] text-center p-3 bg-red-800 text-white border border-slate-400">TIDAK</th>
                                                         </tr>
@@ -1267,7 +1267,7 @@
                                                     <thead className="bg-slate-100 text-slate-700 font-bold text-[10px] uppercase tracking-wider">
                                                         <tr>
                                                             <th className="border border-slate-200 p-2.5 w-[6%] text-center">NO</th>
-                                                            <th className="border border-slate-200 p-2.5 w-[64%]">DESKRIPSI DEVIASI / REKOMENDASI TINDAKAN PERBAIKAN</th>
+                                                            <th className="border border-slate-200 p-2.5 w-[64%]">DESKRIPSI TEMUAN / TINDAKAN PERBAIKAN</th>
                                                             <th className="border border-slate-200 p-2.5 w-[30%]">PIC & TARGET CLOSING</th>
                                                         </tr>
                                                     </thead>
@@ -1419,8 +1419,8 @@
                                 <div className="space-y-4 animate-fade-in relative z-10">
                                     <div className="bg-white border border-slate-200 rounded-2xl p-4 md:p-6 shadow-sm">
                                         <div className="mb-4 border-b border-slate-100 pb-2">
-                                            <h3 className="text-slate-900 font-extrabold text-sm md:text-base tracking-tight flex items-center gap-1.5"><span>🛡️</span> Vault Cloud Vault Weekly Inspeksi</h3>
-                                            <p className="text-[11px] text-slate-500 font-light">Penyimpanan sistem arsip pusat logistik PT BTR.</p>
+                                            <h3 className="text-slate-900 font-extrabold text-sm md:text-base tracking-tight flex items-center gap-1.5"><span>🛡️</span>  Weekly Inspeksi</h3>
+                                            <p className="text-[11px] text-slate-500 font-light"></p>
                                         </div>
 
                                         <div className="overflow-x-auto custom-scrollbar">
@@ -1432,7 +1432,7 @@
                                                         <th className="p-3.5">Fasilitas / Lokasi</th>
                                                         <th className="p-3.5">Inspektor Penanggung Jawab</th>
                                                         <th className="p-3.5">Status</th>
-                                                        <th className="p-3.5 text-center">Aksi Dokumen</th>
+                                                        <th className="p-3.5 text-center">Dokumen</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody className="divide-y divide-slate-100 font-medium text-slate-700">
@@ -1470,7 +1470,7 @@
                         </main>
 
                         <footer className="bg-slate-900/50 backdrop-blur-sm border-t border-slate-800 p-4 text-center text-[10px] uppercase font-bold text-slate-500 print-hidden tracking-widest relative z-10">
-                            PT Batutua Tembaga Raya — SCM Facility Compliance Portal
+                            PT Batutua Tembaga Raya — SCM Facility 
                         </footer>
                     </div>
                 );
