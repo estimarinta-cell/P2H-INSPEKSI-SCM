@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistem  Inspeksi & P2H UNIT SCM</title>
+    <title>Sistem Inspeksi & P2H UNIT SCM</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
@@ -108,8 +108,8 @@
                { section: "II. EMERGENCY", tasks: ["APAR", "Kotak P3K", "Tool Kit & Jack"] },
                { section: "II. PEMERIKASAAN SEBELUM MESIN HIDUP", tasks: ["Level air pendingin radiator cukup", "Level oli mesin cukup", "Level oli power steering cukup", "Level oli rem cukup", "Level bahan bakar cukup", "Visual cek kondisi belt kipas baik", "Level air pembersih kaca cukup", "Terminal battery bersih dan kondisi baik"] },
                { section: "III. PEMERIKASAAN SETELAH MESIN HIDUP", tasks: ["Rem service dan parkir baik", "Panel instrument kondisi baik", "Tanda belok berfungsi baik", "Lampu jauh/dekat berfungsi baik", "Lampu stop berfungsi baik", "Lampu belakang berfungsi baik", "Lampu Hazard berfungsi baik", "Alarm mundur berfungsi baik", "Klackson berfungsi baik", "Pembersih kaca depan berfungsi baik", "Radio komunikasi berfungsi baik"] }
-            ]
-        }  
+             ]
+         }  
   };
 
         const btrUnits = [
@@ -141,6 +141,23 @@
             'Fuel Station': "BTR-SCM-010", 'Oil Boom': "BTR-SCM-010", 'Oil Storage': "BTR-SCM-019",
             'Main Tank Fuel': "BTR-SCM-010", 'Gas Storage': "BTR-SCM-019", 'Jetty Area': "BTR-SCM-006",
             'Laydown Yard': "BTR-SCM-019", 'Warehouse Area': "BTR-SCM-020"
+        };
+
+        // --- FUNGSI HELPER: WAKTU INDONESIA TIMUR (WIT) ---
+        const getWITDateTime = () => {
+            const formatter = new Intl.DateTimeFormat('en-GB', {
+                timeZone: 'Asia/Jayapura',
+                year: 'numeric', month: '2-digit', day: '2-digit',
+                hour: '2-digit', minute: '2-digit',
+                hour12: false
+            });
+            const parts = formatter.formatToParts(new Date());
+            const p = {};
+            parts.forEach(({type, value}) => p[type] = value);
+            
+            const d = `${p.year}-${p.month}-${p.day}`;
+            const t = `${p.hour}:${p.minute}`;
+            return { d, t };
         };
 
         // --- COMPONENT INPUT TANDA TANGAN (CANVAS DRAWING PAD) ---
@@ -301,9 +318,7 @@
             };
 
             React.useEffect(() => {
-                const now = new Date();
-                const d = now.toISOString().split('T')[0];
-                const t = String(now.getHours()).padStart(2, '0') + ":" + String(now.getMinutes()).padStart(2, '0');
+                const { d, t } = getWITDateTime();
                 
                 setSys1Meta(prev => ({ ...prev, tanggal: d, jam: t }));
                 setSys2Meta(prev => ({ ...prev, tanggal: d, jam: t }));
@@ -339,7 +354,7 @@
                 const recordId = Date.now();
                 const newRecord = {
                     id: recordId,
-                    timestamp: new Date().toLocaleString('id-ID'),
+                    timestamp: new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jayapura' }),
                     unit: unitDataScript1[sys1Unit].name,
                     unitKey: sys1Unit, 
                     unitNum: sys1Meta.unitNum,
@@ -423,6 +438,8 @@
                 const formData = new URLSearchParams();
                 let adaDataDikirim = false; 
 
+                const { d } = getWITDateTime();
+
                 btrUnits.concat(pliUnits).forEach(u => {
                     const p = parseFloat(hmData[`pagi_${u.id}`]);
                     const m = parseFloat(hmData[`malam_${u.id}`]);
@@ -433,7 +450,7 @@
                     
                     if (!isNaN(p) || !isNaN(m)) {
                         adaDataDikirim = true;
-                        const tgl = hmData[`tgl_${u.id}`] || new Date().toISOString().split('T')[0];
+                        const tgl = hmData[`tgl_${u.id}`] || d;
                         const ket = hmData[`ket_${u.id}`] || "";
                         
                         formData.append(`tgl_${u.id}`, tgl);
@@ -596,9 +613,7 @@
             };
 
             const resetSys2Context = () => {
-                const now = new Date();
-                const d = now.toISOString().split('T')[0];
-                const t = String(now.getHours()).padStart(2, '0') + ":" + String(now.getMinutes()).padStart(2, '0');
+                const { d, t } = getWITDateTime();
                 
                 setSys2ActiveId(null);
                 setSys2Meta({ tanggal: d, jam: t, inspectedBy: '' }); 
@@ -652,7 +667,7 @@
                         body: JSON.stringify(updatedRecord)
                     }).then(() => {
                         alert("🎯 Terima kasih");
-                        setActiveTab('dashboard');
+                        setActiveTab('verifikasi'); // <-- REVISI KEMBALI KE VERIFIKASI
                         setSys2ActiveId(null);
                         setSys2ReadOnly(false);
                         resetSys2Context();
@@ -660,33 +675,35 @@
                     }).catch(e => console.error(e));
 
                 } else if (targetRecord.status === 'Pending HOD') {
-                    // ACTION 2: HOD memvalidasi berkas -> Status menjadi 'Approved' lalu Dokumen Dicetak
-                    if (!sys2Sigs.sigHead || !sys2Sigs.nameHead.trim()) {
-                        alert("⚠️ SCM Department Head wajib mengisi nama dan menandatangani berkas sebelum persetujuan akhir!");
-                        return;
-                    }
-                    const updatedRecord = { 
-                        ...targetRecord, 
-                        status: 'Approved',
-                        sigHead: sys2Sigs.sigHead,
-                        nameHead: sys2Sigs.nameHead
-                    };
-                    fetch(`${FIREBASE_URL}/sys2_logs/${sys2ActiveId}.json`, {
-                        method: 'PUT',
-                        body: JSON.stringify(updatedRecord)
-                    }).then(() => {
-                        alert("🎯 Terima kasih");
-                        setTimeout(() => {
-                            window.print();
-                            setActiveTab('dashboard');
-                            setSys2ActiveId(null);
-                            setSys2ReadOnly(false);
-                            resetSys2Context();
-                            fetchCloudData();
-                        }, 400);
-                    }).catch(e => console.error(e));
+    // ACTION 2: HOD memvalidasi berkas -> Status menjadi 'Approved' (Hanya Simpan)
+    if (!sys2Sigs.sigHead || !sys2Sigs.nameHead.trim()) {
+        alert("⚠️ SCM Department Head wajib mengisi nama dan menandatangani berkas sebelum persetujuan akhir!");
+        return;
+    }
+    const updatedRecord = { 
+        ...targetRecord, 
+        status: 'Approved',
+        sigHead: sys2Sigs.sigHead,
+        nameHead: sys2Sigs.nameHead
+    };
+    
+    fetch(`${FIREBASE_URL}/sys2_logs/${sys2ActiveId}.json`, {
+        method: 'PUT',
+        body: JSON.stringify(updatedRecord)
+    }).then(() => {
+        // Tampilkan pesan sukses
+        alert("🎯 Data disetujui dan berhasil disimpan.");
+        
+        // Langsung arahkan kembali ke tab verifikasi tanpa mencetak PDF
+        setActiveTab('verifikasi'); 
+        setSys2ActiveId(null);
+        setSys2ReadOnly(false);
+        resetSys2Context();
+        fetchCloudData();
+        
+    }).catch(e => console.error(e));
 
-                } else if (targetRecord.status === 'Approved') {
+} else if (targetRecord.status === 'Approved') {
                     // ACTION 3: Jika sudah Approved, cukup tampilkan layar print
                     window.print();
                 }
@@ -850,7 +867,7 @@
                                                             {btrUnits.map(u => (
                                                                 <tr key={u.id} className="hover:bg-slate-50/60 transition-colors">
                                                                     <td className="p-2.5">
-                                                                        <input type="date" className="border border-slate-300 focus:border-red-500 focus:ring-1 focus:ring-red-500 rounded-lg p-1.5 text-xs outline-none font-semibold text-slate-800 w-full max-w-[150px] bg-white transition-all" defaultValue={new Date().toISOString().split('T')[0]} onChange={e => setHmData({...hmData, [`tgl_${u.id}`]: e.target.value})} />
+                                                                        <input type="date" className="border border-slate-300 focus:border-red-500 focus:ring-1 focus:ring-red-500 rounded-lg p-1.5 text-xs outline-none font-semibold text-slate-800 w-full max-w-[150px] bg-white transition-all" defaultValue={getWITDateTime().d} onChange={e => setHmData({...hmData, [`tgl_${u.id}`]: e.target.value})} />
                                                                     </td>
                                                                     <td className="p-2.5 font-bold text-center text-red-600 bg-slate-50/50">{u.n}</td>
                                                                     <td className="p-2.5">
@@ -886,7 +903,7 @@
                                                             {pliUnits.map(u => (
                                                                 <tr key={u.id} className="hover:bg-slate-50/60 transition-colors">
                                                                     <td className="p-2.5">
-                                                                        <input type="date" className="border border-slate-300 focus:border-red-500 focus:ring-1 focus:ring-red-500 rounded-lg p-1.5 text-xs outline-none font-semibold text-slate-800 w-full max-w-[150px] bg-white transition-all" defaultValue={new Date().toISOString().split('T')[0]} onChange={e => setHmData({...hmData, [`tgl_${u.id}`]: e.target.value})} />
+                                                                        <input type="date" className="border border-slate-300 focus:border-red-500 focus:ring-1 focus:ring-red-500 rounded-lg p-1.5 text-xs outline-none font-semibold text-slate-800 w-full max-w-[150px] bg-white transition-all" defaultValue={getWITDateTime().d} onChange={e => setHmData({...hmData, [`tgl_${u.id}`]: e.target.value})} />
                                                                     </td>
                                                                     <td className="p-2.5 font-bold text-center text-blue-600 bg-slate-50/50">{u.n}</td>
                                                                     <td className="p-2.5">
@@ -948,7 +965,7 @@
         </div>
         <div className="flex border-b border-slate-200 pb-1.5 items-center">
             <span className="w-[125px] text-slate-500 font-bold uppercase shrink-0">JAM CHECK</span><span className="mr-1">:</span>
-            {sys1ActiveRecordId !== null ? <span className="font-bold text-slate-800">{sys1Meta.jam}</span> : <input type="time" value={sys1Meta.jam} onChange={e=>setSys1Meta({...sys1Meta, jam: e.target.value})} className="flex-1 bg-transparent font-bold text-slate-900 outline-none w-full" />}
+            {sys1ActiveRecordId !== null ? <span className="font-bold text-slate-800">{sys1Meta.jam} WITA</span> : <input type="time" value={sys1Meta.jam} onChange={e=>setSys1Meta({...sys1Meta, jam: e.target.value})} className="flex-1 bg-transparent font-bold text-slate-900 outline-none w-full" />}
         </div>
     </div>
     <div className="sm:col-span-2 print:col-span-2 flex border-b border-slate-200 pb-1.5 items-center mt-1">
@@ -1039,7 +1056,8 @@
                                                 <button type="button" onClick={saveSys1SpvApproval} className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold uppercase tracking-wider py-3 px-6 rounded-xl shadow-md transition-all active:scale-95 w-full sm:w-auto">✔️ VALIDASI & SIMPAN</button>
                                             )
                                         )}
-                                        <button type="button" onClick={() => { resetSys1Form(); setActiveTab('dashboard'); }} className="bg-slate-800 hover:bg-slate-700 border border-slate-600 text-white text-xs font-bold uppercase tracking-wider py-3 px-6 rounded-xl shadow-xs transition-all w-full sm:w-auto">KEMBALI</button>
+                                        {/* REVISI KEMBALI KE HALAMAN SEBELUMNYA */}
+                                        <button type="button" onClick={() => { const target = sys1ActiveRecordId ? 'antrean' : 'dashboard'; resetSys1Form(); setActiveTab(target); }} className="bg-slate-800 hover:bg-slate-700 border border-slate-600 text-white text-xs font-bold uppercase tracking-wider py-3 px-6 rounded-xl shadow-xs transition-all w-full sm:w-auto">KEMBALI</button>
                                     </div>
                                 </div>
                             )}
@@ -1412,10 +1430,11 @@
                                             <>
                                                 <button onClick={handleSys2Action} className="px-6 py-3 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white rounded-xl text-xs font-bold uppercase tracking-wider shadow-md transition-all w-full sm:w-auto">
                                                     {sys2Records.find(x => x.id === sys2ActiveId)?.status === 'Approved' ? '🖨️ Cetak PDF Dokumen' :
-                                                     sys2Records.find(x => x.id === sys2ActiveId)?.status === 'Pending HOD' ? 'APPROVE HOD & CETAK PDF' :
-                                                     'VALIDASI SPV (NEXT: HOD)'}
+                                                     sys2Records.find(x => x.id === sys2ActiveId)?.status === 'Pending HOD' ? 'APPROVE HOD' :
+                                                     'VALIDASI SPV'}
                                                 </button>
-                                                <button onClick={() => { setSys2ActiveId(null); setSys2ReadOnly(false); resetSys2Context(); setActiveTab('verifikasi'); }} className="px-6 py-3 bg-slate-800 hover:bg-slate-700 border border-slate-600 text-white rounded-xl text-xs font-bold uppercase tracking-wider shadow-xs transition-all w-full sm:w-auto">Kembali</button>
+                                                {/* REVISI KEMBALI KE HALAMAN SEBELUMNYA */}
+                                                <button onClick={() => { const target = sys2ActiveId ? 'verifikasi' : 'dashboard'; setSys2ActiveId(null); setSys2ReadOnly(false); resetSys2Context(); setActiveTab(target); }} className="px-6 py-3 bg-slate-800 hover:bg-slate-700 border border-slate-600 text-white rounded-xl text-xs font-bold uppercase tracking-wider shadow-xs transition-all w-full sm:w-auto">Kembali</button>
                                             </>
                                         ) : (
                                             <>
@@ -1423,6 +1442,8 @@
                                                     {isSaving ? '⏳ Mengirim Arsip...' : 'SAVE'}
                                                 </button>
                                                 <button onClick={() => { if(confirm("Kosongkan form?")) resetSys2Context(); }} className="px-6 py-3.5 bg-slate-800 hover:bg-slate-700 border border-slate-600 text-slate-200 rounded-xl text-xs font-bold uppercase tracking-wider transition-all w-full sm:w-auto">Reset Form</button>
+                                                {/* REVISI KEMBALI KE HALAMAN SEBELUMNYA */}
+                                                <button onClick={() => { const target = sys2ActiveId ? 'verifikasi' : 'dashboard'; setSys2ActiveId(null); setSys2ReadOnly(false); resetSys2Context(); setActiveTab(target); }} className="px-6 py-3.5 bg-slate-800 hover:bg-slate-700 border border-slate-600 text-slate-200 rounded-xl text-xs font-bold uppercase tracking-wider transition-all w-full sm:w-auto">Kembali</button>
                                             </>
                                         )}
                                     </div>
@@ -1443,7 +1464,7 @@
                                                     <tr className="bg-slate-50 text-slate-500 font-extrabold uppercase text-[10px] tracking-wider border-b border-slate-200">
                                                         <th className="p-3.5">Tanggal / Jam</th>
                                                         <th className="p-3.5">Kode Registrasi Dokumen</th>
-                                                        <th className="p-3.5">Fasilitas / Lokasi</th>
+                                                        <th className="p-3.5">Lokasi</th>
                                                         <th className="p-3.5">Inspektor Penanggung Jawab</th>
                                                         <th className="p-3.5">Status</th>
                                                         <th className="p-3.5 text-center">Dokumen</th>
