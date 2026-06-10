@@ -108,8 +108,8 @@
                { section: "II. EMERGENCY", tasks: ["APAR", "Kotak P3K", "Tool Kit & Jack"] },
                { section: "II. PEMERIKASAAN SEBELUM MESIN HIDUP", tasks: ["Level air pendingin radiator cukup", "Level oli mesin cukup", "Level oli power steering cukup", "Level oli rem cukup", "Level bahan bakar cukup", "Visual cek kondisi belt kipas baik", "Level air pembersih kaca cukup", "Terminal battery bersih dan kondisi baik"] },
                { section: "III. PEMERIKASAAN SETELAH MESIN HIDUP", tasks: ["Rem service dan parkir baik", "Panel instrument kondisi baik", "Tanda belok berfungsi baik", "Lampu jauh/dekat berfungsi baik", "Lampu stop berfungsi baik", "Lampu belakang berfungsi baik", "Lampu Hazard berfungsi baik", "Alarm mundur berfungsi baik", "Klackson berfungsi baik", "Pembersih kaca depan berfungsi baik", "Radio komunikasi berfungsi baik"] }
-            ]
-        }  
+             ]
+         }  
   };
 
         const btrUnits = [
@@ -199,7 +199,7 @@
 
             if (savedImage) {
                 return (
-                    <div className="flex flex-col items-center justify-center p-1 bg-slate-50 rounded-lg border border-slate-200">
+                    <div className="flex flex-col items-center justify-center p-1 bg-white rounded-lg border border-slate-200">
                         <img src={savedImage} className="w-40 h-20 object-contain mix-blend-multiply" alt="Tanda tangan" />
                         {!readOnly && (
                             <button onClick={() => onSave('')} className="text-[10px] text-red-600 font-medium mt-1 print-hidden hover:underline focus:outline-none">Hapus TTD ✕</button>
@@ -221,7 +221,7 @@
                         onTouchStart={startDrawing}
                         onTouchEnd={stopDrawing}
                         onTouchMove={draw}
-                        className="bg-slate-50 border-2 border-dashed border-slate-300 rounded-lg cursor-crosshair touch-none max-w-full hover:border-slate-400 transition-colors"
+                        className="bg-white border-2 border-dashed border-slate-300 rounded-lg cursor-crosshair touch-none max-w-full hover:border-slate-400 transition-colors"
                     />
                     <div className="flex gap-3 mt-1.5 print-hidden justify-between w-full px-1">
                         <span className="text-[10px] text-slate-400 italic font-medium">{placeholder || 'Goreskan TTD'}</span>
@@ -389,9 +389,9 @@
             const saveSys1SpvApproval = () => {
                 // HAPUS ATAU COMMENT BLOCK INI AGAR TTD SPV TIDAK WAJIB
                     // if (!sys1TtdSpv) {
-                   //     alert("⚠️ Supervisor wajib menandatangani form");
-               //     return;
-		// }
+                   //      alert("⚠️ Supervisor wajib menandatangani form");
+               //      return;
+                // }
                 
                 const targetRecord = sys1Logs.find(f => f.id == sys1ActiveRecordId);
                 // Pastikan jika ttd kosong, tetap tersimpan sebagai string kosong (bukan null/error)
@@ -806,7 +806,7 @@
                                 </div>
                             </div>
                             <nav className="flex gap-2 w-full lg:w-auto justify-end overflow-x-auto py-1 custom-scrollbar">
-                                <button onClick={() => setActiveTab('dashboard')} className={`px-4 py-2 rounded-xl text-xs font-bold transition duration-200 shrink-0 border ${activeTab==='dashboard' ? 'bg-red-600 border-red-500 text-white shadow-md':'bg-slate-800/50 border-slate-700 text-slate-300 hover:bg-slate-700'}`}>Dashboard & HM</button>
+                                <button onClick={() => setActiveTab('dashboard')} className={`px-4 py-2 rounded-xl text-xs font-bold transition duration-200 shrink-0 border ${activeTab==='dashboard' ? 'bg-red-600 border-red-500 text-white shadow-md':'bg-slate-800/50 border-slate-700 text-slate-300 hover:bg-slate-700'}`}>HM</button>
                                 <button onClick={() => { resetSys1Form(); setActiveTab('form'); }} className={`px-4 py-2 rounded-xl text-xs font-bold transition duration-200 shrink-0 border ${activeTab==='form' ? 'bg-red-600 border-red-500 text-white shadow-md':'bg-slate-800/50 border-slate-700 text-slate-300 hover:bg-slate-700'}`}>📝 Input P2H</button>
                                 <button onClick={() => handleVerifikasiClick('antrean')} className={`px-4 py-2 rounded-xl text-xs font-bold transition duration-200 shrink-0 border ${activeTab==='antrean' ? 'bg-red-600 border-red-500 text-white shadow-md':'bg-slate-800/50 border-slate-700 text-slate-300 hover:bg-slate-700'}`}>📂 Verifikasi</button>
                             </nav>
@@ -814,20 +814,7 @@
 
                         <main className="flex-1 p-4 md:p-8 max-w-7xl w-full mx-auto print-area no-black-pdf relative z-10">
                             {activeTab === 'dashboard' && (
-                                <div className="space-y-6 animate-fade-in">
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 print-hidden">
-                                        <div onClick={() => setActiveTab('form')} className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 p-6 rounded-2xl shadow-sm cursor-pointer hover:border-red-500 hover:shadow-[0_10px_25px_-5px_rgba(239,68,68,0.2)] transition-all group duration-300">
-                                            <div className="text-3xl mb-2 bg-slate-900/50 w-12 h-12 rounded-xl flex items-center justify-center group-hover:bg-red-500/20 group-hover:scale-110 transition-all">📝</div>
-                                            <h3 className="font-bold text-slate-100">Form Input P2H Unit</h3>
-                                            <p className="text-xs text-slate-400 mt-1 font-light"></p>
-                                        </div>
-                                        <div onClick={() => handleVerifikasiClick('antrean')} className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 p-6 rounded-2xl shadow-sm cursor-pointer hover:border-red-500 hover:shadow-[0_10px_25px_-5px_rgba(239,68,68,0.2)] transition-all group duration-300">
-                                            <div className="text-3xl mb-2 bg-slate-900/50 w-12 h-12 rounded-xl flex items-center justify-center group-hover:bg-red-500/20 group-hover:scale-110 transition-all">📂</div>
-                                            <h3 className="font-bold text-slate-100">Verifikasi Supervisor</h3>
-                                            <p className="text-xs text-slate-400 mt-1 font-light">Validasi Doc P2H</p>
-                                        </div>
-                                    </div>
-
+                                <div className="space-y-6 py-2 animate-fade-in">
                                     <div className="bg-white text-slate-900 border border-slate-200 rounded-2xl p-4 md:p-8 shadow-xl">
                                         <div className="text-center mb-6 border-b border-slate-200 pb-4">
                                             <h2 className="text-xl md:text-3xl font-black text-slate-900 uppercase tracking-tight">REKAP HOUR METER UNIT SCM</h2>
@@ -1041,7 +1028,11 @@
                                                 <button type="button" onClick={saveSys1SpvApproval} className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold uppercase tracking-wider py-3 px-6 rounded-xl shadow-md transition-all active:scale-95 w-full sm:w-auto">✔️ VALIDASI & SIMPAN</button>
                                             )
                                         )}
-                                        <button type="button" onClick={() => { resetSys1Form(); setActiveTab('dashboard'); }} className="bg-slate-800 hover:bg-slate-700 border border-slate-600 text-white text-xs font-bold uppercase tracking-wider py-3 px-6 rounded-xl shadow-xs transition-all w-full sm:w-auto">KEMBALI</button>
+                                        <button type="button" onClick={() => { 
+    const nextTab = sys1ActiveRecordId ? 'antrean' : 'dashboard';
+    resetSys1Form(); 
+    setActiveTab(nextTab); 
+}} className="bg-slate-800 hover:bg-slate-700 border border-slate-600 text-white text-xs font-bold uppercase tracking-wider py-3 px-6 rounded-xl shadow-xs transition-all w-full sm:w-auto">KEMBALI</button>
                                     </div>
                                 </div>
                             )}
