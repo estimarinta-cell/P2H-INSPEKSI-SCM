@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistem  Inspeksi & P2H UNIT SCM</title>
+    <title>Sistem Inspeksi & P2H UNIT SCM</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
@@ -235,6 +235,26 @@
         // COMPONENT UTAMA: PORTAL INTEGRASI
         // ==========================================
         function App() {
+            // --- FUNGSI HELPER TANGGAL LOKAL (DIPAKSA KE WIT / UTC+9) ---
+            const getLocalDateString = () => {
+                const d = new Date();
+                // Ambil timestamp universal, tambah 9 jam untuk offset WIT
+                const witTime = new Date(d.getTime() + (9 * 60 * 60 * 1000));
+                
+                // Gunakan getUTC...() agar tidak tergeser lagi oleh timezone bawaan HP/Laptop
+                const year = witTime.getUTCFullYear();
+                const month = String(witTime.getUTCMonth() + 1).padStart(2, '0');
+                const day = String(witTime.getUTCDate()).padStart(2, '0');
+                return `${year}-${month}-${day}`;
+            };
+
+            const getLocalTimeString = () => {
+                const d = new Date();
+                const witTime = new Date(d.getTime() + (9 * 60 * 60 * 1000));
+                
+                return String(witTime.getUTCHours()).padStart(2, '0') + ":" + String(witTime.getUTCMinutes()).padStart(2, '0');
+            };
+            // ------------------------------------------
             const [systemMode, setSystemMode] = React.useState('core-dashboard'); 
             const [activeTab, setActiveTab] = React.useState('dashboard'); 
             
@@ -301,14 +321,20 @@
             };
 
             React.useEffect(() => {
-                const now = new Date();
-                const d = now.toISOString().split('T')[0];
-                const t = String(now.getHours()).padStart(2, '0') + ":" + String(now.getMinutes()).padStart(2, '0');
-                
-                setSys1Meta(prev => ({ ...prev, tanggal: d, jam: t }));
-                setSys2Meta(prev => ({ ...prev, tanggal: d, jam: t }));
-
                 fetchCloudData();
+                
+                // Mencegah tanggal tertimpa saat membuka form verifikasi
+                setSys1Meta(prev => prev.tanggal ? prev : { 
+                    ...prev, 
+                    tanggal: getLocalDateString(), 
+                    jam: getLocalTimeString() 
+                });
+                
+                setSys2Meta(prev => prev.tanggal ? prev : { 
+                    ...prev, 
+                    tanggal: getLocalDateString(), 
+                    jam: getLocalTimeString() 
+                });
             }, [systemMode, activeTab]);
 
             React.useEffect(() => {
@@ -411,7 +437,7 @@
             };
 
             const resetSys1Form = () => {
-                setSys1Meta({ model: '', unitNum: '', operator: '', tanggal: '', jam: '' });
+                setSys1Meta({ model: '', unitNum: '', operator: '', tanggal: getLocalDateString(), jam: getLocalTimeString() });
                 setSys1Checklist({});
                 setSys1TtdOp('');
                 setSys1TtdSpv('');
@@ -435,7 +461,7 @@
                     
                     if (!isNaN(p) || !isNaN(m)) {
                         adaDataDikirim = true;
-                        const tgl = hmData[`tgl_${u.id}`] || new Date().toISOString().split('T')[0];
+                        const tgl = hmData[`tgl_${u.id}`] || getLocalDateString();
                         const ket = hmData[`ket_${u.id}`] || "";
                         
                         formData.append(`tgl_${u.id}`, tgl);
@@ -598,12 +624,8 @@
             };
 
             const resetSys2Context = () => {
-                const now = new Date();
-                const d = now.toISOString().split('T')[0];
-                const t = String(now.getHours()).padStart(2, '0') + ":" + String(now.getMinutes()).padStart(2, '0');
-                
                 setSys2ActiveId(null);
-                setSys2Meta({ tanggal: d, jam: t, inspectedBy: '' }); 
+                setSys2Meta({ tanggal: getLocalDateString(), jam: getLocalTimeString(), inspectedBy: '' }); 
                 
                 const libraryItems = weeklyLibrary[sys2Area] || [];
                 setSys2Checks(libraryItems.map(() => ({ val: '', img: '' })));
@@ -679,7 +701,12 @@
                     }).then(() => {
                         alert("🎯 Terima kasih");
                         setTimeout(() => {
+                            // UBAH NAMA FILE PDF SEMENTARA SEBELUM PRINT
+                            const originalTitle = document.title;
+                            document.title = `Weekly_${sys2Meta.tanggal}_${sys2Area}`;
                             window.print();
+                            document.title = originalTitle; // Kembalikan ke judul asli
+
                             setActiveTab('dashboard');
                             setSys2ActiveId(null);
                             setSys2ReadOnly(false);
@@ -690,7 +717,10 @@
 
                 } else if (targetRecord.status === 'Approved') {
                     // ACTION 3: Jika sudah Approved, cukup tampilkan layar print
+                    const originalTitle = document.title;
+                    document.title = `Weekly_${sys2Meta.tanggal}_${sys2Area}`;
                     window.print();
+                    document.title = originalTitle;
                 }
             };
 
@@ -839,7 +869,7 @@
                                                             {btrUnits.map(u => (
                                                                 <tr key={u.id} className="hover:bg-slate-50/60 transition-colors">
                                                                     <td className="p-2.5">
-                                                                        <input type="date" className="border border-slate-300 focus:border-red-500 focus:ring-1 focus:ring-red-500 rounded-lg p-1.5 text-xs outline-none font-semibold text-slate-800 w-full max-w-[150px] bg-white transition-all" defaultValue={new Date().toISOString().split('T')[0]} onChange={e => setHmData({...hmData, [`tgl_${u.id}`]: e.target.value})} />
+                                                                        <input type="date" className="border border-slate-300 focus:border-red-500 focus:ring-1 focus:ring-red-500 rounded-lg p-1.5 text-xs outline-none font-semibold text-slate-800 w-full max-w-[150px] bg-white transition-all" defaultValue={getLocalDateString()} onChange={e => setHmData({...hmData, [`tgl_${u.id}`]: e.target.value})} />
                                                                     </td>
                                                                     <td className="p-2.5 font-bold text-center text-red-600 bg-slate-50/50">{u.n}</td>
                                                                     <td className="p-2.5">
@@ -875,7 +905,7 @@
                                                             {pliUnits.map(u => (
                                                                 <tr key={u.id} className="hover:bg-slate-50/60 transition-colors">
                                                                     <td className="p-2.5">
-                                                                        <input type="date" className="border border-slate-300 focus:border-red-500 focus:ring-1 focus:ring-red-500 rounded-lg p-1.5 text-xs outline-none font-semibold text-slate-800 w-full max-w-[150px] bg-white transition-all" defaultValue={new Date().toISOString().split('T')[0]} onChange={e => setHmData({...hmData, [`tgl_${u.id}`]: e.target.value})} />
+                                                                        <input type="date" className="border border-slate-300 focus:border-red-500 focus:ring-1 focus:ring-red-500 rounded-lg p-1.5 text-xs outline-none font-semibold text-slate-800 w-full max-w-[150px] bg-white transition-all" defaultValue={getLocalDateString()} onChange={e => setHmData({...hmData, [`tgl_${u.id}`]: e.target.value})} />
                                                                     </td>
                                                                     <td className="p-2.5 font-bold text-center text-blue-600 bg-slate-50/50">{u.n}</td>
                                                                     <td className="p-2.5">
@@ -1023,7 +1053,12 @@
                                             </button>
                                         ) : (
                                             sys1Logs.find(x => x.id === sys1ActiveRecordId)?.status === 'approved' ? (
-                                                <button type="button" onClick={() => window.print()} className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold uppercase tracking-wider py-3 px-6 rounded-xl shadow-md transition-all active:scale-95 w-full sm:w-auto">🖨️ CETAK / DOWNLOAD PDF</button>
+                                                <button type="button" onClick={() => {
+                                                    const originalTitle = document.title;
+                                                    document.title = `P2H_${sys1Meta.tanggal}_${sys1Meta.unitNum}`;
+                                                    window.print();
+                                                    document.title = originalTitle;
+                                                }} className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold uppercase tracking-wider py-3 px-6 rounded-xl shadow-md transition-all active:scale-95 w-full sm:w-auto">🖨️ CETAK / DOWNLOAD PDF</button>
                                             ) : (
                                                 <button type="button" onClick={saveSys1SpvApproval} className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold uppercase tracking-wider py-3 px-6 rounded-xl shadow-md transition-all active:scale-95 w-full sm:w-auto">✔️ VALIDASI & SIMPAN</button>
                                             )
